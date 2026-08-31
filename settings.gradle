@@ -1,0 +1,8 @@
+rootProject.name = 'signet'
+include 'bitcoin'
+include 'evm'
+include 'tron'
+include 'solana'
+include 'xrp'
+include 'spi'
+include 'stellar'
