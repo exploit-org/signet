@@ -15,6 +15,20 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+subprojects {
+    pluginManager.withPlugin("java") {
+        dependencies {
+            testImplementation "org.exploit:tss4j-natives:1.0.0:linux-amd64@jar"
+            testImplementation "org.exploit:tss4j-natives:1.0.0:macos-aarch64@jar"
+            testImplementation "org.exploit:tss4j-natives:1.0.0:windows-amd64@jar"
+        }
+
+        tasks.withType(Test).configureEach {
+            jvmArgs '--enable-native-access=ALL-UNNAMED'
+        }
+    }
+}
+
 test {
     useJUnitPlatform()
 }

@@ -13,12 +13,16 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:6.0.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'net.jqwik:jqwik:1.9.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     api platform('org.exploit.anvil:bom:0.2.2')
     api 'org.exploit.anvil:bigint'
     api 'org.exploit.anvil:util'
     api 'org.exploit.anvil:crypto-spi'
     api 'org.exploit.anvil:ecc-spi'
+    api 'org.exploit:jettyx:0.1.7'
+    api 'org.exploit:jettyx-jackson:0.1.7'
+    api 'com.fasterxml.jackson.core:jackson-databind:2.22.2'
 }
 
 test {
