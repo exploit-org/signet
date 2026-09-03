@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+dependencies {
+    testImplementation testFixtures(project(':integration-tests'))
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+    outputs.upToDateWhen { false }
+    outputs.cacheIf { false }
+    maxParallelForks = 1
+    systemProperty 'junit.jupiter.execution.parallel.enabled', 'false'
+    systemProperty 'it.compose.file', file('../docker/docker-compose.yml').absolutePath
+    systemProperty 'it.logs.dir', layout.buildDirectory.dir('container-logs').get().asFile.absolutePath
+    systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', 'warn'
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat = 'full'
+    }
+
+    doFirst {
+        if (System.getProperty('os.name').startsWith('Mac') && !System.getenv('DOCKER_HOST')) {
+            def socket = System.getenv('COLIMA_SOCKET_ENV') ?: "${System.getProperty('user.home')}/.colima/default/docker.sock"
+            if (!file(socket).exists()) {
+                throw new GradleException('Start Colima with: colima start --port-forwarder grpc (or set DOCKER_HOST)')
+            }
+            environment 'DOCKER_HOST', "unix://${socket}"
+            environment 'TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE', System.getenv('TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE') ?: '/var/run/docker.sock'
+            environment 'TESTCONTAINERS_HOST_OVERRIDE', System.getenv('TESTCONTAINERS_HOST_OVERRIDE') ?: '127.0.0.1'
+        }
+    }
+}

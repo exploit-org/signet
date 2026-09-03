@@ -32,3 +32,9 @@ subprojects {
 test {
     useJUnitPlatform()
 }
+
+tasks.register('integrationTest') {
+    group = 'verification'
+    description = 'Runs the Java functional suite against Bitcoin Core regtest and Blockbook.'
+    dependsOn ':integration-tests:functional:test'
+}

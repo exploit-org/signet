@@ -1,0 +1,23 @@
+plugins {
+    id 'java-library'
+    id 'java-test-fixtures'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+dependencies {
+    testFixturesApi project(':blockbook:blockbook-bitcoin')
+    testFixturesApi platform('org.junit:junit-bom:6.0.0')
+    testFixturesApi 'org.junit.jupiter:junit-jupiter'
+    testFixturesApi 'org.testcontainers:testcontainers:1.21.4'
+    testFixturesApi 'org.awaitility:awaitility:4.3.0'
+    testFixturesRuntimeOnly 'org.slf4j:slf4j-simple:2.0.17'
+}

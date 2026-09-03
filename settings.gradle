@@ -9,6 +9,8 @@ include 'spi'
 include 'stellar'
 include 'secp256k1-support'
 include 'crypto-util'
+include 'integration-tests'
+include 'integration-tests:functional'
 
 include 'blockbook:bitcoin'
 project(':blockbook:bitcoin').name = 'blockbook-bitcoin'

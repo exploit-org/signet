@@ -1,0 +1,18 @@
+{
+  "coin_name": "Regtest",
+  "coin_shortcut": "REGTEST",
+  "coin_label": "Bitcoin Regtest",
+  "rpc_url": "http://bitcoin:18443",
+  "rpc_user": "signet",
+  "rpc_pass": "regtest-only",
+  "rpc_timeout": 10,
+  "parse": true,
+  "message_queue_binding": "tcp://bitcoin:28332",
+  "xpub_magic": 70617039,
+  "xpub_magic_segwit_p2sh": 71979618,
+  "xpub_magic_segwit_native": 73342198,
+  "slip44": 1,
+  "mempool_workers": 2,
+  "mempool_sub_workers": 2,
+  "block_addresses_to_keep": 300
+}

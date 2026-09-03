@@ -1,0 +1,53 @@
+services:
+  bitcoin:
+    labels:
+      org.exploit.signet.test-run: "${SIGNET_TEST_RUN:-manual}"
+    image: bitcoin/bitcoin:28.1@sha256:f332e1117453886b704e8f985dc21594917e79422860effe7842f2aa45a3ac6e
+    command:
+      - -regtest
+      - -server
+      - -txindex=1
+      - -deprecatedrpc=warnings
+      - -listen=0
+      - -dnsseed=0
+      - -discover=0
+      - -rpcbind=0.0.0.0
+      - -rpcallowip=0.0.0.0/0
+      - -rpcuser=signet
+      - -rpcpassword=regtest-only
+      - -rpcport=18443
+      - -zmqpubhashblock=tcp://0.0.0.0:28332
+      - -fallbackfee=0.00002000
+      - -acceptnonstdtxn=0
+    ports:
+      - "127.0.0.1::18443"
+    healthcheck:
+      test: ["CMD", "bitcoin-cli", "-regtest", "-rpcuser=signet", "-rpcpassword=regtest-only", "getblockchaininfo"]
+      interval: 1s
+      timeout: 5s
+      retries: 60
+
+  blockbook:
+    labels:
+      org.exploit.signet.test-run: "${SIGNET_TEST_RUN:-manual}"
+    image: ghcr.io/trezor/trezor-user-env-regtest@sha256:18210326d7653572ef54a76aea17edee104eef3d281fa4ba3837a9f4b3282c0e
+    entrypoint: /opt/coins/blockbook/bitcoin_regtest/bin/blockbook
+    working_dir: /opt/coins/blockbook/bitcoin_regtest
+    command:
+      - -blockchaincfg=/etc/blockbook/blockchaincfg.json
+      - -datadir=/tmp/blockbook
+      - -sync
+      - -internal=:9030
+      - -public=:9130
+      - -explorer=
+      - -logtostderr
+      - -dbcache=64
+      - -resyncindexperiod=1000
+      - -resyncmempoolperiod=1000
+    volumes:
+      - ./blockbook/bitcoin.json:/etc/blockbook/blockchaincfg.json:ro
+    ports:
+      - "127.0.0.1::9130"
+    depends_on:
+      bitcoin:
+        condition: service_healthy
