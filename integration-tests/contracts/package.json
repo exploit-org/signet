@@ -1,0 +1,15 @@
+{
+  "name": "signet-evm-test-contracts",
+  "private": true,
+  "scripts": {
+    "build": "node compile.cjs"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "5.4.0",
+    "circle": "https://github.com/circlefin/stablecoin-evm/archive/fc85788bc7c23cefe3df1a757133048bfddadeaa.tar.gz",
+    "openzeppelin3": "npm:@openzeppelin/contracts@3.4.2",
+    "solc": "0.8.30",
+    "solc4": "npm:solc@0.4.18",
+    "solc6": "npm:solc@0.6.12"
+  }
+}

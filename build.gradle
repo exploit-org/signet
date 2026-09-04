@@ -35,6 +35,6 @@ test {
 
 tasks.register('integrationTest') {
     group = 'verification'
-    description = 'Runs the Java functional suite against Bitcoin Core regtest and Blockbook.'
+    description = 'Runs the Java functional suites against Bitcoin Core, Anvil and Blockbook.'
     dependsOn ':integration-tests:functional:test'
 }

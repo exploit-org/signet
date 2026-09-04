@@ -1,0 +1,32 @@
+services:
+  anvil:
+    image: ghcr.io/foundry-rs/foundry:v1.3.1@sha256:2dbf3d0fc58593ad9d01ef57677f93f83f4987acd295d17f303448d82e3a3ae7
+    entrypoint: anvil
+    command: ["--host", "0.0.0.0", "--chain-id", "11155111", "--hardfork", "shanghai", "--accounts", "1", "--silent"]
+    ports: ["127.0.0.1::8545"]
+    labels:
+      org.exploit.signet.test-run: "${SIGNET_TEST_RUN:-manual}"
+
+  blockbook:
+    image: ghcr.io/trezor/trezor-user-env-regtest@sha256:18210326d7653572ef54a76aea17edee104eef3d281fa4ba3837a9f4b3282c0e
+    entrypoint: /opt/coins/blockbook/bitcoin_regtest/bin/blockbook
+    working_dir: /opt/coins/blockbook/bitcoin_regtest
+    command:
+      - -blockchaincfg=/etc/blockbook/blockchaincfg.json
+      - -datadir=/tmp/blockbook
+      - -sync
+      - -blockheight=1
+      - -internal=:9036
+      - -public=:9136
+      - -explorer=
+      - -logtostderr
+      - -dbcache=64
+      - -resyncindexperiod=1000
+      - -resyncmempoolperiod=1000
+    volumes:
+      - ./blockbook/ethereum.json:/etc/blockbook/blockchaincfg.json:ro
+    ports: ["127.0.0.1::9136"]
+    depends_on: [anvil]
+    restart: on-failure
+    labels:
+      org.exploit.signet.test-run: "${SIGNET_TEST_RUN:-manual}"

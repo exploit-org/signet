@@ -24,6 +24,7 @@ test {
     maxParallelForks = 1
     systemProperty 'junit.jupiter.execution.parallel.enabled', 'false'
     systemProperty 'it.compose.file', file('../docker/docker-compose.yml').absolutePath
+    systemProperty 'it.evm.compose.file', file('../docker/evm-compose.yml').absolutePath
     systemProperty 'it.logs.dir', layout.buildDirectory.dir('container-logs').get().asFile.absolutePath
     systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', 'warn'
 

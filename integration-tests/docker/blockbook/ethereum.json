@@ -1,0 +1,12 @@
+{
+  "coin_name": "Ethereum",
+  "coin_shortcut": "ETH",
+  "coin_label": "Ethereum regtest",
+  "rpc_url": "ws://anvil:8545",
+  "rpc_timeout": 10,
+  "block_addresses_to_keep": 300,
+  "mempool_workers": 2,
+  "mempool_sub_workers": 2,
+  "queryBackendOnMempoolResync": true,
+  "processInternalTransactions": false
+}
