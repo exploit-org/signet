@@ -15,7 +15,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'net.jqwik:jqwik:1.9.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    implementation project(':spi')
+    api project(':evm:evm-spi')
     api 'org.web3j:abi:6.0.0'
 }
 
