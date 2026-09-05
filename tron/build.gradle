@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'java-library'
+    id 'com.google.protobuf' version '0.9.4'
 }
 
 group = 'org.exploit'
@@ -12,7 +14,20 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:6.0.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'net.jqwik:jqwik:1.9.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    api project(':spi')
+    api project(':secp256k1-support')
+    api project(':evm:evm-spi')
+    api project(':evm:evm-contracts')
+    implementation project(':crypto-util')
+    implementation 'com.google.protobuf:protobuf-java:4.27.3'
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.21.12'
+    }
 }
 
 test {
