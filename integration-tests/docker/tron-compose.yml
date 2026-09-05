@@ -1,0 +1,30 @@
+services:
+  tron:
+    image: tronbox/tre:2.0.0@sha256:f4332e11df12a9f360639a4546fd046593909630fda48af00b30410c144342f0
+    ports: ["127.0.0.1::9090"]
+    labels:
+      org.exploit.signet.test-run: "${SIGNET_TEST_RUN:-manual}"
+
+  blockbook:
+    build:
+      context: ./blockbook-tron
+    command:
+      - -blockchaincfg=/etc/blockbook/blockchaincfg.json
+      - -datadir=/tmp/blockbook
+      - -sync
+      - -blockheight=1
+      - -internal=:9212
+      - -public=:9312
+      - -explorer=
+      - -logtostderr
+      - -dbcache=64
+      - -workers=1
+      - -resyncindexperiod=1000
+      - -resyncmempoolperiod=1000
+    volumes:
+      - ./blockbook/tron.json:/etc/blockbook/blockchaincfg.json:ro
+    ports: ["127.0.0.1::9312"]
+    depends_on: [tron]
+    restart: on-failure
+    labels:
+      org.exploit.signet.test-run: "${SIGNET_TEST_RUN:-manual}"

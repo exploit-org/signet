@@ -1,0 +1,28 @@
+{
+  "address_aliases": true,
+  "mempoolTxTimeoutHours": 4,
+  "queryBackendOnMempoolResync": true,
+  "averageBlockTimeMs": 3000,
+  "missingBlockRetry": {
+    "retryDelayMs": 1000,
+    "recheckThreshold": 10,
+    "tipRecheckThreshold": 3,
+    "maxStallMs": 60000
+  },
+  "tron_fullnode_http_url_template": "http://tron:9090",
+  "tron_solidity_http_url_template": "http://tron:9090",
+  "coin_name": "Tron",
+  "coin_shortcut": "TRX",
+  "coin_label": "Tron private",
+  "rpc_url": "http://tron:9090/jsonrpc",
+  "rpc_url_ws": "",
+  "rpc_user": "",
+  "rpc_pass": "",
+  "rpc_timeout": 10,
+  "parse": true,
+  "message_queue_binding": "",
+  "mempool_workers": 0,
+  "mempool_sub_workers": 0,
+  "mempool_resync_batch_size": 0,
+  "block_addresses_to_keep": 100
+}

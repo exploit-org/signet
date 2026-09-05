@@ -1,0 +1,13 @@
+diff --git a/bchain/coins/tron/evm.go b/bchain/coins/tron/evm.go
+index b175881..5832280 100644
+--- a/bchain/coins/tron/evm.go
++++ b/bchain/coins/tron/evm.go
+@@ -192,6 +192,8 @@ func (c *TronClient) NetworkID(ctx context.Context) (*big.Int, error) {
+ 	switch ver {
+ 	case MainnetGenesisHash:
+ 		return big.NewInt(int64(MainNet)), nil
++	case "0xc845df2f": // tronbox/tre v2.0.0 deterministic private genesis
++		return big.NewInt(int64(MainNet)), nil
+ 	case NileTestnetGenesisHash:
+ 		return big.NewInt(int64(TestNetNile)), nil
+ 	default:

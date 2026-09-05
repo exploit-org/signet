@@ -1,0 +1,21 @@
+{
+  "source": "https://github.com/trezor/blockbook/blob/6e1299a2c4c31f7d5b94a53e293d8cfb8cafdfe4/bchain/coins/tron/tronparser_test.go",
+  "revision": "6e1299a2c4c31f7d5b94a53e293d8cfb8cafdfe4",
+  "vectors": [
+    {
+      "visible": "TJngGWiRMLgNFScEybQxLEKQMNdB4nR6Vx",
+      "raw": "4160bb513e91aa723a10a4020ae6fcce39bce7e240",
+      "abi": "0x60bb513e91aa723a10a4020ae6fcce39bce7e240"
+    },
+    {
+      "visible": "TYD4pB7wGi1p8zK67rBTV3KdfEb9nvNDXh",
+      "raw": "41f3f1c189594e2642e5d42d7669b4ec60a69802a9",
+      "abi": "0xf3f1c189594e2642e5d42d7669b4ec60a69802a9"
+    },
+    {
+      "visible": "TXncUDXYkRCmwhFikxYMutwAy93fbhPbbv",
+      "raw": "41ef51c82ea6336ba1544c4a182a7368e9fbe28274",
+      "abi": "0xef51c82ea6336ba1544c4a182a7368e9fbe28274"
+    }
+  ]
+}
