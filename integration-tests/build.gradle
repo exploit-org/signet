@@ -18,6 +18,7 @@ dependencies {
     testFixturesApi project(':blockbook:blockbook-evm')
     testFixturesApi project(':blockbook:blockbook-tron')
     testFixturesApi project(':solana')
+    testFixturesApi project(':xrp')
     testFixturesApi platform('org.junit:junit-bom:6.0.0')
     testFixturesApi 'org.junit.jupiter:junit-jupiter'
     testFixturesApi 'org.testcontainers:testcontainers:1.21.4'

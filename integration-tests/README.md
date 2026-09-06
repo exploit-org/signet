@@ -1,10 +1,11 @@
 # Integration tests
 
-- `src/testFixtures/java`: shared container lifecycle and Bitcoin/EVM/TRON/Solana fixtures.
+- `src/testFixtures/java`: shared container lifecycle and Bitcoin/EVM/TRON/Solana/XRP fixtures.
 - `docker/docker-compose.yml`: Bitcoin Core regtest and Blockbook as separate services.
 - `docker/evm-compose.yml`: Anvil and a separate Ethereum-configured Blockbook.
 - `docker/tron-compose.yml`: official TRE private chain and Blockbook v0.6.0 built from its tagged source.
 - `docker/solana-compose.yml`: Agave 3.1.8 test validator, with its real System/SPL/Token-2022 programs.
+- `docker/xrp-compose.yml`: rippled 2.6.2 standalone, pinned by image digest.
 - `functional/src/test/java`: usage scenarios through the blockchain providers.
 
 ## Run
@@ -45,7 +46,23 @@ unavailable; it does not silently substitute consumed energy for the required li
 
 # Solana official vectors and pure unit/property tests:
 ./gradlew :solana:test
+
+# XRP native payments, both curves, tags, reserve/fee limits, history and replay/expiry:
+./gradlew :integration-tests:functional:test --tests '*XrpPaymentsTest'
+./gradlew :xrp:test
 ```
+
+## XRP
+
+The XRP suite runs a fresh standalone rippled for each test class and explicitly
+closes ledgers. It signs funding payments locally with the public standalone genesis
+key, then sends payments through the provider using generated secp256k1 and Ed25519
+accounts. AccountSet setup for the destination-tag test uses the local node's signing
+API and the public genesis seed; production XRP code submits signed blobs only.
+The image is AMD64 and runs under Docker emulation on Apple Silicon. RPC is exposed
+only on a random loopback port; the test configuration enables its admin methods for
+ledger advancement. Do not use this standalone configuration for a public node.
+Container logs are saved in `functional/build/container-logs/` on success and failure.
 
 ## Solana
 
