@@ -33,6 +33,7 @@ function compile(compiler, file, content, circle = false, evmVersion = circle ? 
 }
 
 compile(require('solc'), 'TestTokens.sol', fs.readFileSync('TestTokens.sol', 'utf8'));
+compile(require('solc824'), 'Fanout.sol', fs.readFileSync('../../evm/src/main/solidity/Fanout.sol', 'utf8'), false, 'paris');
 const circleFile = 'circle/contracts/v2/FiatTokenV2_2.sol';
 compile(require('solc6'), circleFile, fs.readFileSync(path.join('node_modules', circleFile), 'utf8'), true);
 compile(require('solc4'), 'TetherToken.sol', fs.readFileSync('TetherToken.sol', 'utf8'), false, 'byzantium');

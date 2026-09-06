@@ -52,3 +52,20 @@ contract MalformedReturnToken {
         assembly { mstore(0, 2) return(0, 32) }
     }
 }
+
+contract FanoutTestRecipient {
+    bool public rejecting;
+    function chainId() external view returns (uint256) { return block.chainid; }
+    function setRejecting(bool value) external { rejecting = value; }
+    receive() external payable { require(!rejecting, "payment rejected"); }
+}
+
+contract FanoutTestToken is TestToken {
+    address public blocked;
+    constructor() TestToken(6) {}
+    function setBlocked(address value) external { blocked = value; }
+    function _update(address from, address to, uint256 amount) internal override {
+        require(to != blocked, "recipient blocked");
+        super._update(from, to, amount);
+    }
+}

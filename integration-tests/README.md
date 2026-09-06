@@ -52,6 +52,97 @@ unavailable; it does not silently substitute consumed energy for the required li
 ./gradlew :xrp:test
 ```
 
+## Fanout on EVM and TRON
+
+`EvmMultiTransfer` / `TronMultiTransfer` send native currency through a deployed
+Fanout. `ERC20MultiTransfer` / `TRC20MultiTransfer` use its token method. Every intent
+contains `fanoutAddress`, a nonempty list of `Recipient` values and an optional
+`BigInteger feeLimit`; EVM intents also contain `chainId`, and token intents contain
+`contractAddress`. TRON addresses use the selected account descriptor's Base58 format.
+
+```java
+var nativeEvm = new EvmMultiTransfer(fanoutAddress, recipients, chainId, feeLimit);
+var tokenEvm = new ERC20MultiTransfer(fanoutAddress, tokenAddress, recipients, chainId, feeLimit);
+var nativeTron = new TronMultiTransfer(fanoutAddress, recipients, feeLimit);
+var tokenTron = new TRC20MultiTransfer(fanoutAddress, tokenAddress, recipients, feeLimit);
+```
+
+Pass the intent to `provider.transactions().factory().create(sender, intent, descriptor)`.
+The existing factory simulates the entire call and checks its fee and sender balance.
+The native transaction value is exactly the sum of recipient amounts; fees are separate.
+The limit applies to the whole transaction in wei (EVM) or sun (TRON).
+Token intents use an existing allowance by default. `factory.approvals(sender, intent)`
+on EVM, or `factory.approvals(sender, intent, descriptor)` on TRON, returns the needed
+ERC20/TRC20 calls: none when allowance is sufficient, one exact-amount approve when it
+is zero, or `approve(0)` followed by exact-amount approve when an insufficient nonzero
+allowance needs replacing (also compatible with the pinned USDT fixture).
+Prepare, sign, broadcast and confirm these calls **one at a time**, then create the
+Fanout transaction against the updated state. The factories never sign or broadcast
+approvals; they return calls, not a prebuilt set of transactions with stale nonces.
+
+```java
+for (var approval : evm.transactions().factory().approvals(sender, tokenEvm)) {
+    var unsigned = evm.transactions().factory().create(sender, approval, chainId);
+    // Sign, broadcast and wait for successful confirmation before continuing.
+}
+var unsignedBatch = evm.transactions().factory().create(sender, tokenEvm, null);
+```
+
+For a token known to support ERC-3009, attach its signed **receive** authorization:
+use a deployment of the updated Fanout containing `transferTokenWithAuthorization`.
+
+```java
+var authorization = new ERC3009ReceiveAuthorization(
+        tokenDomain, senderAddress, fanoutAddress, totalAmount,
+        validAfter, validBefore, randomNonce32);
+var signature = (EvmSignature) evm.signer().sign(sender, authorization);
+var authorized = tokenEvm.withAuthorization(new ERC3009Authorization(authorization.call(signature).data()));
+var unsignedBatch = evm.transactions().factory().create(sender, authorized, null);
+```
+
+`TRC20MultiTransfer.withAuthorization` accepts the same `ERC3009Authorization` payload
+from a compatible signer, with ABI addresses represented by their 20-byte values.
+It does not add ERC-3009 support to ordinary TRC20 tokens. Signet's EVM typed-data models
+can encode that payload; TRON's fallback signer returns `RawSignature`, not `EvmSignature`.
+The TRON authorization integration test shows the conversion using the existing signer.
+
+Token capability and its exact EIP-712 domain must come from verified token metadata.
+ERC-3009 has no universal ERC-165 discovery requirement; the factories do not guess
+support from a symbol, bytecode selector or a failed RPC call. An attached authorization
+selects `transferTokenWithAuthorization` and suppresses approval preparation. An invalid,
+expired, replayed or unsupported authorization fails simulation, without falling back to
+allowance. Without authorization the existing allowance path is selected.
+
+The Fanout entry point accepts only the fixed `receiveWithAuthorization(...,v,r,s)` ABI.
+It validates that the authorizer is the outer transaction sender, the payee is Fanout,
+and the signed value is the batch total. The transaction signature binds the recipients
+and amounts; this entry point does not accept a third-party relayer. Fanout calls the
+token's `receiveWithAuthorization`, then reuses the normal distribution and balance checks.
+
+All distribution methods are atomic: a failed payment reverts all payments in the batch,
+including the token pull, allowance consumption or authorization nonce consumption.
+Already confirmed approval transactions remain confirmed if a later batch fails; the
+sender can retry or revoke the remaining allowance. Approvals have their own network
+fees; the intent's `feeLimit` applies to the Fanout transaction. A confirmed revert can still charge network
+fees. The integration tests deploy `evm/src/main/solidity/Fanout.sol` and check balances,
+fee caps, standard/no-return tokens and rollback after the second recipient starts
+rejecting payments. The pinned `solc824` compiler builds that source with the Paris
+opcode target for both VMs; generated ABI, bytecode and source hash are in
+`src/testFixtures/resources/evm/contracts.json`.
+
+```bash
+./gradlew :integration-tests:functional:test --tests '*EvmMultiTransferTest' --tests '*TronMultiTransferTest'
+./gradlew :integration-tests:functional:test --tests '*FanoutAuthorizationTest'
+# Fee comparison using confirmed receipts on the pinned local nodes:
+./gradlew :integration-tests:functional:test --tests '*FanoutFeesTest'
+# Recompile fixtures after changing Solidity (from integration-tests/contracts):
+npm ci --ignore-scripts
+npm run build
+```
+
+Measured gas, Energy and actual fee results, with methodology and limits, are in
+[fanout-fees.md](fanout-fees.md).
+
 ## XRP
 
 The XRP suite runs a fresh standalone rippled for each test class and explicitly

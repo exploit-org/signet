@@ -14,6 +14,8 @@ contract Fanout {
     error TokenBalanceQueryFailed();
     error TokenInboundAmountMismatch();
     error TokenFinalBalanceMismatch();
+    error InvalidAuthorization();
+    error TokenAuthorizationFailed();
 
     function transferNative(
         address[] calldata recipients,
@@ -56,17 +58,55 @@ contract Fanout {
         address[] calldata recipients,
         uint256[] calldata amounts
     ) external {
+        uint256 total = _validateAndSum(recipients, amounts);
+        uint256 balanceBefore = _tokenBalanceBefore(token);
+        _transferFrom(token, total);
+        _distributeToken(token, recipients, amounts, total, balanceBefore);
+    }
+
+    /// @dev The authorizer must submit the outer transaction, binding the distribution to their transaction signature.
+    function transferTokenWithAuthorization(
+        address token,
+        address[] calldata recipients,
+        uint256[] calldata amounts,
+        bytes calldata authorization
+    ) external {
+        uint256 total = _validateAndSum(recipients, amounts);
+        uint256 balanceBefore = _tokenBalanceBefore(token);
+        _receiveWithAuthorization(token, total, authorization);
+        _distributeToken(token, recipients, amounts, total, balanceBefore);
+    }
+
+    function _receiveWithAuthorization(address token, uint256 total, bytes calldata authorization) private {
+        if (authorization.length != 292 || bytes4(authorization[:4]) != 0xef55bec6) {
+            revert InvalidAuthorization();
+        }
+
+        (address from, address to, uint256 value) = abi.decode(authorization[4:], (address, address, uint256));
+        if (from != msg.sender || to != address(this) || value != total) {
+            revert InvalidAuthorization();
+        }
+
+        (bool success,) = token.call(authorization);
+        if (!success) {
+            revert TokenAuthorizationFailed();
+        }
+    }
+
+    function _tokenBalanceBefore(address token) private view returns (uint256) {
         if (token == address(this) || token.code.length == 0) {
             revert InvalidToken();
         }
+        return _balanceOf(token);
+    }
 
-        uint256 length = recipients.length;
-        uint256 total = _validateAndSum(recipients, amounts);
-
-        uint256 balanceBefore = _balanceOf(token);
-
-        _transferFrom(token, total);
-
+    function _distributeToken(
+        address token,
+        address[] calldata recipients,
+        uint256[] calldata amounts,
+        uint256 total,
+        uint256 balanceBefore
+    ) private {
         uint256 balanceAfterPull = _balanceOf(token);
 
         if (
@@ -76,7 +116,7 @@ contract Fanout {
             revert TokenInboundAmountMismatch();
         }
 
-        for (uint256 i; i < length;) {
+        for (uint256 i; i < recipients.length;) {
             _transfer(
                 token,
                 recipients[i],
@@ -133,7 +173,7 @@ contract Fanout {
 
     function _balanceOf(
         address token
-    ) private view returns (uint256 balance) {
+    ) private view returns (uint256 tokenBalance) {
         bool valid;
 
         assembly ("memory-safe") {
@@ -154,7 +194,7 @@ contract Fanout {
             valid := and(success, eq(returndatasize(), 32))
 
             if valid {
-                balance := mload(ptr)
+                tokenBalance := mload(ptr)
             }
         }
 
