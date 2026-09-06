@@ -15,6 +15,13 @@ The upstream packages are ISC licensed; `LICENSE` and `LICENSE-codec` contain th
   It pins unsigned bytes, signing preimages, curve-specific signing bytes,
   signatures, signed blobs and transaction IDs. Cases include absent flags/tags,
   tag zero, uint32 maxima, zero fee and the maximum XRP supply in drops.
+- `sdk-batches.json` uses the same independent SDK versions for atomic batches of
+  2 and 8 payments with both curves. It pins outer signatures/hashes and nested
+  RawTransactions bytes, including empty inner keys, zero inner fees, per-payment
+  tags, optional FullyCanonicalSig flags and consecutive sequences ending at the uint32 maximum.
+  Node compatibility is separately tested against
+  [rippled 3.3.0](https://github.com/XRPLF/rippled/tree/00a178fb92ca49521b937ae1a99d863765ea8a90)
+  with `BatchV1_1` enabled.
 
 Regenerate the SDK expectations from `xrp/src/test/oracle` with
 `npm ci --ignore-scripts && npm run generate`. The lockfile pins all dependencies.
@@ -28,6 +35,7 @@ SHA-256:
 2f87ff9d2a337b4f454736a3060e3abdbd9d3ca71e410a38ebcd572fd06b279f  keypairs.json
 f62caf01b4884d080c19f5df28fd83f34dc3b17047a7c29b532b63a60141276b  historical-payment.json
 ab492e0c16679e7160e56f6fc3c31c0d6e5006fd98a73f61374d0b103b1a4420  sdk-payments.json
+0f3b2835cd95e00be4af21e8af8c16ba4e3dedccb52f430723d75e7574868157  sdk-batches.json
 8a1d288b9d4a73276758e39890631a7165a18ba6442483e473bf895dd310af13  LICENSE
 0cc6523c3b7c398ae0c493a766f4136e1a5c697757c4e16ad8cf0cfc8656b7e6  LICENSE-codec
 ```

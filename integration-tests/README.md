@@ -5,7 +5,7 @@
 - `docker/evm-compose.yml`: Anvil and a separate Ethereum-configured Blockbook.
 - `docker/tron-compose.yml`: official TRE private chain and Blockbook v0.6.0 built from its tagged source.
 - `docker/solana-compose.yml`: Agave 3.1.8 test validator, with its real System/SPL/Token-2022 programs.
-- `docker/xrp-compose.yml`: rippled 2.6.2 standalone, pinned by image digest.
+- `docker/xrp-compose.yml`: rippled 3.3.0 standalone, pinned by image digest, with BatchV1_1 enabled.
 - `functional/src/test/java`: usage scenarios through the blockchain providers.
 
 ## Run
@@ -47,8 +47,8 @@ unavailable; it does not silently substitute consumed energy for the required li
 # Solana official vectors and pure unit/property tests:
 ./gradlew :solana:test
 
-# XRP native payments, both curves, tags, reserve/fee limits, history and replay/expiry:
-./gradlew :integration-tests:functional:test --tests '*XrpPaymentsTest'
+# XRP native payments and atomic batches, both curves, tags, fees, history, rollback and replay/expiry:
+./gradlew :integration-tests:functional:test --tests '*Xrp*Test'
 ./gradlew :xrp:test
 ```
 
@@ -63,6 +63,29 @@ The image is AMD64 and runs under Docker emulation on Apple Silicon. RPC is expo
 only on a random loopback port; the test configuration enables its admin methods for
 ledger advancement. Do not use this standalone configuration for a public node.
 Container logs are saved in `functional/build/container-logs/` on success and failure.
+
+`XrpMultiTransfer` prepares one atomic Batch of 2–8 native XRP payments from the same
+sender. Each `XrpTransfer` carries its own destination/source tags. Set `feeLimit`
+in drops on the batch; inner transfers must leave it null and `withFee` false.
+The factory checks that the validated ledger enables `BatchV1_1` and applies both
+the transfer limit and `XrpTransactionOptions.maxFee` to the whole batch fee.
+Regular Payments and Batches share the signer/parser/broadcaster; raw transaction
+contents are available through `data()` (`XrpPayment` or `XrpBatch`).
+
+```java
+var intent = new XrpMultiTransfer(List.of(
+        new XrpTransfer(new Recipient(firstAddress, firstAmount), 0L),
+        new XrpTransfer(new Recipient(secondAddress, secondAmount), secondTag)
+), feeLimit);
+var unsigned = provider.transactions().factory().create(sender, intent);
+var signed = provider.signer().sign(sender, unsigned);
+```
+
+A validated Batch can return outer `tesSUCCESS` even when its payments rolled back.
+Use `XrpIndexedTransaction.successful()`, which also verifies that all inner payments
+committed. `innerTransactions()` exposes their results; each carries `parentBatchId()`.
+On atomic rollback the inner list is empty and only the outer fee is charged.
+Other Batch modes, multiple senders, tickets and issued-currency payments are unsupported.
 
 ## Solana
 

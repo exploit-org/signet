@@ -1,7 +1,8 @@
 services:
   rippled:
-    image: rippleci/rippled:2.6.2@sha256:2586c8aeff8a54cc4049036e39266d8ac708d01b7802d8625121c4de2c927ce9
+    image: xrpllabsofficial/xrpld:3.3.0@sha256:353d5e016bb93519e9fcac715cdc8c2205b96c4cfe2d1f0f1d22a22f6efaff70
     platform: linux/amd64
+    entrypoint: /usr/bin/xrpld
     command: ["--standalone", "--start", "--conf", "/etc/opt/ripple/rippled.cfg"]
     ports:
       - "127.0.0.1::51234"
