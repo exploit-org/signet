@@ -1,0 +1,19 @@
+FROM rust:1.86-bookworm@sha256:300ec56abce8cc9448ddea2172747d048ed902a3090e6b57babb2bf19f754081 AS build
+
+RUN apt-get update && apt-get install -y --no-install-recommends clang cmake libclang-dev libssl-dev libudev-dev protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
+RUN curl -fL --retry 3 https://codeload.github.com/anza-xyz/agave/tar.gz/2717084afeeb7baad4342468c27f528ef617a3cf -o /tmp/agave.tar.gz \
+    && echo 'd68dbc29744d6739c6627ee40f29aeb355e7e155ecf9c06fbbfd957b44eab063  /tmp/agave.tar.gz' | sha256sum -c - \
+    && mkdir /agave && tar -xzf /tmp/agave.tar.gz -C /agave --strip-components=1 \
+    && rm /tmp/agave.tar.gz
+WORKDIR /agave
+ENV CARGO_BUILD_JOBS=2 CARGO_PROFILE_RELEASE_DEBUG=0 CARGO_PROFILE_RELEASE_LTO=false
+RUN cargo build --locked --release --bin solana-test-validator
+
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libssl3 libudev1 \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=build /agave/target/release/solana-test-validator /usr/local/bin/
+EXPOSE 8899 8900
+ENTRYPOINT ["solana-test-validator"]
+CMD ["--reset", "--ledger", "/tmp/ledger", "--bind-address", "127.0.0.1", "--rpc-port", "8899", "--faucet-sol", "1000000", "--quiet"]

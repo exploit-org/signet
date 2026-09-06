@@ -1,10 +1,11 @@
 # Integration tests
 
-- `src/testFixtures/java`: shared container lifecycle and Bitcoin/EVM/TRON fixtures.
+- `src/testFixtures/java`: shared container lifecycle and Bitcoin/EVM/TRON/Solana fixtures.
 - `docker/docker-compose.yml`: Bitcoin Core regtest and Blockbook as separate services.
 - `docker/evm-compose.yml`: Anvil and a separate Ethereum-configured Blockbook.
 - `docker/tron-compose.yml`: official TRE private chain and Blockbook v0.6.0 built from its tagged source.
-- `functional/src/test/java`: usage scenarios through `BitcoinProvider`, `EvmProvider`, and `TronProvider`.
+- `docker/solana-compose.yml`: Agave 3.1.8 test validator, with its real System/SPL/Token-2022 programs.
+- `functional/src/test/java`: usage scenarios through the blockchain providers.
 
 ## Run
 
@@ -38,7 +39,47 @@ unavailable; it does not silently substitute consumed energy for the required li
 
 # TRON unit/vector tests without containers:
 ./gradlew :tron:test :blockbook:blockbook-tron:test
+
+# Solana validator scenarios:
+./gradlew :integration-tests:functional:test --tests '*Solana*Test'
+
+# Solana official vectors and pure unit/property tests:
+./gradlew :solana:test
 ```
+
+## Solana
+
+AMD64 uses the official Agave 3.1.8 release archive with a checked SHA-256.
+ARM64 builds the same upstream commit `2717084afeeb7baad4342468c27f528ef617a3cf`
+with Rust 1.86 and `Cargo.lock`; the official AMD64 binary requires AVX and cannot
+run under Apple Silicon's Docker emulation. The environment chooses the Dockerfile
+from the Docker daemon architecture. The first ARM build takes longer and needs
+space for the Rust/C++ build; subsequent runs reuse the tagged image.
+The validator container enables `io_uring` with a container-scoped seccomp override,
+required by Agave 3.1. It does not mount host directories or use privileged mode.
+
+Each test class gets its own local validator. Accounts are generated per scenario
+and funded through the validator faucet. Tests fail if Docker or the validator is
+unavailable; there is no mock RPC or automatic skip. Logs are saved under
+`functional/build/container-logs/`.
+
+Scenarios cover SOL transfers and history, fee-inclusive sweeps, fee sponsorship,
+priority fees and caps, atomic execution failures, classic SPL lifecycle and multisig,
+Token-2022 transfer fees and required memos, versioned messages with real lookup tables,
+durable nonces and recent-blockhash expiration. Each successful submission compares the
+estimated network fee to the confirmed `meta.fee`; token account rent is checked separately.
+
+`SolanaProgramsTest` also deploys the pinned upstream
+[write-to-account SBF program](functional/src/test/resources/solana/write-to-account/README.md)
+through loader-v3 RPC transactions. It checks the uploaded executable bytes, invokes the
+program through arbitrary `SolanaInstruction` lists, reads persisted account data, and
+verifies readonly-account rejection and atomic rollback on a confirmed program error.
+The fixture is checked in with its source, license and SHA-256; no program compilation
+or download is needed during the test run.
+
+RPC history is scoped to the supplied account. Token-account history is queried using
+that token account's address. A wallet-wide history including closed token accounts
+requires an indexer and is not synthesized from the validator's current accounts.
 
 The TRON image is pinned to `tronbox/tre:2.0.0`. Blockbook is built from the exact
 upstream `v0.6.0` commit; the build applies only the checked-in private-genesis

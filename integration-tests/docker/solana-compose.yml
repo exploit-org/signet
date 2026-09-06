@@ -1,0 +1,12 @@
+services:
+  solana:
+    image: "${SOLANA_IMAGE:-signet-solana-validator:3.1.8}"
+    build:
+      context: ./solana
+      dockerfile: "${SOLANA_DOCKERFILE:-Dockerfile}"
+    command: ["--reset", "--ledger", "/tmp/ledger", "--bind-address", "127.0.0.1", "--rpc-port", "8899", "--faucet-sol", "1000000", "--log"]
+    # Agave 3.1 requires io_uring, blocked by Docker's default seccomp profile.
+    security_opt: ["seccomp=unconfined"]
+    ports: ["127.0.0.1::8899"]
+    labels:
+      org.exploit.signet.test-run: "${SIGNET_TEST_RUN:-manual}"

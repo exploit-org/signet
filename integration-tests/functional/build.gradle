@@ -26,6 +26,7 @@ test {
     systemProperty 'it.compose.file', file('../docker/docker-compose.yml').absolutePath
     systemProperty 'it.evm.compose.file', file('../docker/evm-compose.yml').absolutePath
     systemProperty 'it.tron.compose.file', file('../docker/tron-compose.yml').absolutePath
+    systemProperty 'it.solana.compose.file', file('../docker/solana-compose.yml').absolutePath
     systemProperty 'it.logs.dir', layout.buildDirectory.dir('container-logs').get().asFile.absolutePath
     systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', 'warn'
 
