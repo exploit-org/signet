@@ -22,3 +22,5 @@ include 'evm:spi'
 project(':evm:spi').name = 'evm-spi'
 include 'evm:contracts'
 project(':evm:contracts').name = 'evm-contracts'
+
+include 'ed25519-support'
