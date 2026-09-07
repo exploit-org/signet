@@ -1,18 +1,412 @@
 plugins {
-    id 'java'
+    id 'base'
+    id 'tech.yanand.maven-central-publish' version '1.2.0'
 }
 
-group = 'org.exploit'
-version = '1.0-SNAPSHOT'
+group = 'org.exploit.signet'
+version = findProperty('releaseVersion') ?: '1.0-SNAPSHOT'
 
-repositories {
-    mavenCentral()
+def firstPropertyOrEnv = { List<String> propertyNames, List<String> envNames ->
+    for (def propertyName : propertyNames) {
+        def value = findProperty(propertyName)
+        if (value != null && !value.toString().isBlank())
+            return value.toString()
+    }
+
+    for (def envName : envNames) {
+        def value = System.getenv(envName)
+        if (value != null && !value.isBlank())
+            return value
+    }
+
+    return null
 }
 
-dependencies {
-    testImplementation platform('org.junit:junit-bom:6.0.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+def splitBasicAuthToken = { token ->
+    if (token == null || token.toString().isBlank())
+        return null
+
+    def value = token.toString()
+    if (!value.contains(':')) {
+        try {
+            value = new String(Base64.decoder.decode(value), java.nio.charset.StandardCharsets.UTF_8)
+        } catch (IllegalArgumentException ignored) {
+            return null
+        }
+    }
+
+    def separator = value.indexOf(':')
+    if (separator <= 0 || separator == value.length() - 1)
+        return null
+
+    return [value.substring(0, separator), value.substring(separator + 1)]
+}
+
+def centralMavenBasicCredentials = splitBasicAuthToken(findProperty('centralMavenToken'))
+
+ext {
+    anvilVersion = '0.2.2'
+
+    signetJavaProjects = [
+            ':spi',
+            ':crypto-util',
+            ':secp256k1-support',
+            ':ed25519-support',
+            ':bitcoin',
+            ':evm',
+            ':evm:evm-spi',
+            ':evm:evm-contracts',
+            ':tron',
+            ':solana',
+            ':xrp',
+            ':blockbook',
+            ':blockbook:blockbook-bitcoin',
+            ':blockbook:blockbook-evm',
+            ':blockbook:blockbook-tron'
+    ]
+
+    signetPomUrl = findProperty('pomUrl') ?: 'https://github.com/exploit-org/signet'
+    signetScmUrl = findProperty('pomScmUrl') ?: signetPomUrl
+    signetScmConnection = findProperty('pomScmConnection') ?: 'scm:git:https://github.com/exploit-org/signet.git'
+    signetScmDeveloperConnection = findProperty('pomScmDeveloperConnection') ?: 'scm:git:ssh://github.com/exploit-org/signet.git'
+    signetDeveloperId = findProperty('pomDeveloperId') ?: 'xlloit'
+    signetDeveloperName = findProperty('pomDeveloperName') ?: 'xlloit'
+    signetDeveloperEmail = findProperty('pomDeveloperEmail') ?: 'contact@exploit.org'
+    signetSnapshotRepositoryUrl = firstPropertyOrEnv(
+            ['snapshotRepositoryUrl', 'mavenCentralSnapshotRepositoryUrl'],
+            ['SNAPSHOT_REPOSITORY_URL', 'MAVEN_CENTRAL_SNAPSHOT_REPOSITORY_URL']
+    ) ?: 'https://central.sonatype.com/repository/maven-snapshots/'
+    signetSnapshotRepositoryUsername = firstPropertyOrEnv(
+            ['snapshotRepositoryUsername', 'mavenCentralUsername', 'centralMavenUsername', 'centralUsername', 'sonatypeUsername'],
+            ['SNAPSHOT_REPOSITORY_USERNAME', 'MAVEN_CENTRAL_USERNAME', 'CENTRAL_MAVEN_USERNAME', 'CENTRAL_USERNAME', 'SONATYPE_USERNAME']
+    ) ?: centralMavenBasicCredentials?.get(0)
+    signetSnapshotRepositoryPassword = firstPropertyOrEnv(
+            ['snapshotRepositoryPassword', 'mavenCentralPassword', 'centralMavenPassword', 'centralPassword', 'sonatypePassword'],
+            ['SNAPSHOT_REPOSITORY_PASSWORD', 'MAVEN_CENTRAL_PASSWORD', 'CENTRAL_MAVEN_PASSWORD', 'CENTRAL_PASSWORD', 'SONATYPE_PASSWORD']
+    ) ?: centralMavenBasicCredentials?.get(1)
+
+    signetProjectPom = [
+            ':spi'                        : [
+                    name       : 'Signet SPI',
+                    description: 'Shared blockchain provider, account, transaction, and signing interfaces for Signet.'
+            ],
+            ':crypto-util'                : [
+                    name       : 'Signet Crypto Util',
+                    description: 'Shared encoding and cryptographic helpers for Signet modules.'
+            ],
+            ':secp256k1-support'          : [
+                    name       : 'Signet secp256k1 Support',
+                    description: 'secp256k1 keys and signing support for Signet.'
+            ],
+            ':ed25519-support'            : [
+                    name       : 'Signet Ed25519 Support',
+                    description: 'Ed25519 keys and signing support for Signet.'
+            ],
+            ':bitcoin'                    : [
+                    name       : 'Signet Bitcoin',
+                    description: 'Bitcoin blockchain support for Signet.'
+            ],
+            ':evm'                        : [
+                    name       : 'Signet EVM',
+                    description: 'EVM blockchain support for Signet.'
+            ],
+            ':evm:evm-spi'                : [
+                    name       : 'Signet EVM SPI',
+                    description: 'Shared EVM interfaces for Signet.'
+            ],
+            ':evm:evm-contracts'          : [
+                    name       : 'Signet EVM Contracts',
+                    description: 'EVM contract support for Signet.'
+            ],
+            ':tron'                       : [
+                    name       : 'Signet TRON',
+                    description: 'TRON blockchain support for Signet.'
+            ],
+            ':solana'                     : [
+                    name       : 'Signet Solana',
+                    description: 'Solana blockchain support for Signet.'
+            ],
+            ':xrp'                        : [
+                    name       : 'Signet XRP',
+                    description: 'XRP Ledger support for Signet.'
+            ],
+            ':blockbook'                  : [
+                    name       : 'Signet Blockbook',
+                    description: 'Shared Blockbook indexer integration for Signet.'
+            ],
+            ':blockbook:blockbook-bitcoin': [
+                    name       : 'Signet Blockbook Bitcoin',
+                    description: 'Bitcoin Blockbook integration for Signet.'
+            ],
+            ':blockbook:blockbook-evm'    : [
+                    name       : 'Signet Blockbook EVM',
+                    description: 'EVM Blockbook integration for Signet.'
+            ],
+            ':blockbook:blockbook-tron'   : [
+                    name       : 'Signet Blockbook TRON',
+                    description: 'TRON Blockbook integration for Signet.'
+            ],
+            ':bom'                        : [
+                    name       : 'Signet BOM',
+                    description: 'Bill of materials for aligning Signet module versions.'
+            ]
+    ]
+}
+
+def configurePom = { MavenPublication publication, Project p ->
+    def metadata = rootProject.ext.signetProjectPom[p.path]
+
+    publication.pom {
+        name = metadata.name
+        description = metadata.description
+        url = rootProject.ext.signetPomUrl
+
+        licenses {
+            license {
+                name = 'Apache License 2.0'
+                url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+            }
+        }
+
+        developers {
+            developer {
+                id = rootProject.ext.signetDeveloperId
+                name = rootProject.ext.signetDeveloperName
+                email = rootProject.ext.signetDeveloperEmail
+            }
+        }
+
+        scm {
+            connection = rootProject.ext.signetScmConnection
+            developerConnection = rootProject.ext.signetScmDeveloperConnection
+            url = rootProject.ext.signetScmUrl
+        }
+    }
+}
+
+def configureMavenCentralSnapshotRepository = { repository ->
+    repository.name = 'MavenCentralSnapshots'
+    repository.url = rootProject.uri(rootProject.ext.signetSnapshotRepositoryUrl)
+    repository.mavenContent {
+        snapshotsOnly()
+    }
+
+    if (rootProject.ext.signetSnapshotRepositoryUsername && rootProject.ext.signetSnapshotRepositoryPassword) {
+        repository.credentials {
+            username = rootProject.ext.signetSnapshotRepositoryUsername.toString()
+            password = rootProject.ext.signetSnapshotRepositoryPassword.toString()
+        }
+    }
+}
+
+mavenCentral {
+    repoDir = layout.buildDirectory.dir('repos/central-bundles')
+    authToken = findProperty('centralMavenToken') ?: ''
+    publishingType = 'USER_MANAGED'
+}
+
+tasks.register('validateMavenCentralSnapshotPublication') {
+    group = 'publishing'
+    description = 'Validates Maven Central snapshot publishing configuration.'
+
+    doLast {
+        if (!version.toString().endsWith('-SNAPSHOT')) {
+            throw new GradleException("Snapshot publication requires -PreleaseVersion=<version>-SNAPSHOT; current version is ${version}.")
+        }
+
+        if (!rootProject.ext.signetSnapshotRepositoryUsername || !rootProject.ext.signetSnapshotRepositoryPassword) {
+            throw new GradleException(
+                    'Missing Maven Central snapshot credentials. Set snapshotRepositoryUsername/snapshotRepositoryPassword ' +
+                            'or compatible Maven Central/Sonatype username/password properties or environment variables.'
+            )
+        }
+    }
+}
+
+allprojects {
+    group = rootProject.group
+    version = rootProject.version
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+configure(rootProject.ext.signetJavaProjects.collect { project(it) }) {
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(25)
+        }
+
+        withSourcesJar()
+        withJavadocJar()
+    }
+
+    tasks.withType(Javadoc).configureEach {
+        failOnError = false
+
+        options.encoding = 'UTF-8'
+        options.addStringOption('Xdoclint:none', '-quiet')
+        options.addBooleanOption('html5', true)
+    }
+
+    tasks.withType(Jar).configureEach {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from components.java
+                configurePom(delegate, project)
+            }
+        }
+
+        repositories {
+            maven {
+                name = 'CentralBundle'
+                url = rootProject.layout.buildDirectory.dir('repos/central-bundles')
+            }
+            maven(configureMavenCentralSnapshotRepository)
+        }
+    }
+
+    tasks.matching {
+        it.name == 'publishAllPublicationsToMavenCentralSnapshotsRepository' ||
+                it.name == 'publishMavenPublicationToMavenCentralSnapshotsRepository'
+    }.configureEach {
+        dependsOn rootProject.tasks.named('validateMavenCentralSnapshotPublication')
+    }
+
+    signing {
+        def signingKey = findProperty('signingKey')
+        if (signingKey) {
+            def decodedSigningKey = new String(Base64.mimeDecoder.decode(signingKey.toString()), "UTF-8")
+
+            if (!decodedSigningKey.startsWith("-----BEGIN PGP PRIVATE KEY BLOCK-----")) {
+                throw new GradleException("signingKey is not base64 of an armored private key")
+            }
+
+            useInMemoryPgpKeys(decodedSigningKey, findProperty('signingPassword')?.toString())
+        }
+
+        required {
+            gradle.taskGraph.allTasks.any { task ->
+                task.name.toLowerCase(Locale.ROOT).contains('publish') ||
+                        task.name.toLowerCase(Locale.ROOT).contains('sign')
+            }
+        }
+
+        sign publishing.publications.maven
+    }
+}
+
+project(':bom') {
+    apply plugin: 'java-platform'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
+    javaPlatform {
+        allowDependencies()
+    }
+
+    dependencies {
+        constraints {
+            rootProject.ext.signetJavaProjects.each { projectPath ->
+                api project(projectPath)
+            }
+        }
+    }
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from components.javaPlatform
+                configurePom(delegate, project)
+            }
+        }
+
+        repositories {
+            maven {
+                name = 'CentralBundle'
+                url = rootProject.layout.buildDirectory.dir('repos/central-bundles')
+            }
+            maven(configureMavenCentralSnapshotRepository)
+        }
+    }
+
+    tasks.matching {
+        it.name == 'publishAllPublicationsToMavenCentralSnapshotsRepository' ||
+                it.name == 'publishMavenPublicationToMavenCentralSnapshotsRepository'
+    }.configureEach {
+        dependsOn rootProject.tasks.named('validateMavenCentralSnapshotPublication')
+    }
+
+    signing {
+        def signingKey = findProperty('signingKey')
+        if (signingKey) {
+            def decodedSigningKey = new String(Base64.mimeDecoder.decode(signingKey.toString()), "UTF-8")
+
+            if (!decodedSigningKey.startsWith("-----BEGIN PGP PRIVATE KEY BLOCK-----")) {
+                throw new GradleException("signingKey is not base64 of an armored private key")
+            }
+
+            useInMemoryPgpKeys(decodedSigningKey, findProperty('signingPassword')?.toString())
+        }
+
+        required {
+            gradle.taskGraph.allTasks.any { task ->
+                task.name.toLowerCase(Locale.ROOT).contains('publish') ||
+                        task.name.toLowerCase(Locale.ROOT).contains('sign')
+            }
+        }
+
+        sign publishing.publications.maven
+    }
+}
+
+tasks.register('publishAllToCentralBundle') {
+    group = 'publishing'
+    description = 'Publishes every Signet publication into build/repos/central-bundles.'
+    dependsOn((rootProject.ext.signetJavaProjects + [':bom']).collect {
+        "${it}:publishAllPublicationsToCentralBundleRepository"
+    })
+}
+
+tasks.register('publishAllToMavenCentralPortal') {
+    group = 'publishing'
+    description = 'Uploads every Signet publication bundle to Maven Central Portal.'
+    dependsOn(tasks.named('publishToMavenCentralPortal'))
+}
+
+tasks.register('publishAllToMavenCentralSnapshots') {
+    group = 'publishing'
+    description = 'Publishes every Signet -SNAPSHOT publication to Maven Central Portal snapshots.'
+    dependsOn((rootProject.ext.signetJavaProjects + [':bom']).collect {
+        "${it}:publishAllPublicationsToMavenCentralSnapshotsRepository"
+    })
+}
+
+tasks.register('publishAllToSnapshotRepository') {
+    group = 'publishing'
+    description = 'Alias for publishAllToMavenCentralSnapshots.'
+    dependsOn(tasks.named('publishAllToMavenCentralSnapshots'))
+}
+
+tasks.register('publishAllToMavenLocal') {
+    group = 'publishing'
+    description = 'Publishes every Signet publication to the local Maven repository.'
+    dependsOn((rootProject.ext.signetJavaProjects + [':bom']).collect {
+        "${it}:publishToMavenLocal"
+    })
+}
+
+tasks.named('zipBundleForUpload') {
+    dependsOn(tasks.named('publishAllToCentralBundle'))
 }
 
 subprojects {
@@ -27,10 +421,6 @@ subprojects {
             jvmArgs '--enable-native-access=ALL-UNNAMED'
         }
     }
-}
-
-test {
-    useJUnitPlatform()
 }
 
 tasks.register('integrationTest') {

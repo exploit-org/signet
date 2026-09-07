@@ -3,9 +3,6 @@ plugins {
     id 'java-library'
 }
 
-group = 'org.exploit'
-version = '1.0-SNAPSHOT'
-
 repositories {
     mavenCentral()
 }
@@ -15,7 +12,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'net.jqwik:jqwik:1.9.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    api platform('org.exploit.anvil:bom:0.2.2')
+    api platform("org.exploit.anvil:bom:${rootProject.ext.anvilVersion}")
     api 'org.exploit.anvil:bigint'
     api 'org.exploit.anvil:util'
     api 'org.exploit.anvil:crypto-spi'
