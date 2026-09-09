@@ -17,34 +17,120 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-test {
-    useJUnitPlatform()
-    outputs.upToDateWhen { false }
-    outputs.cacheIf { false }
-    maxParallelForks = 1
-    systemProperty 'junit.jupiter.execution.parallel.enabled', 'false'
-    systemProperty 'it.compose.file', file('../docker/docker-compose.yml').absolutePath
-    systemProperty 'it.evm.compose.file', file('../docker/evm-compose.yml').absolutePath
-    systemProperty 'it.tron.compose.file', file('../docker/tron-compose.yml').absolutePath
-    systemProperty 'it.solana.compose.file', file('../docker/solana-compose.yml').absolutePath
-    systemProperty 'it.xrp.compose.file', file('../docker/xrp-compose.yml').absolutePath
-    systemProperty 'it.logs.dir', layout.buildDirectory.dir('container-logs').get().asFile.absolutePath
-    systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', 'warn'
+tasks.register('buildTonApiImage', Exec) {
+    commandLine 'docker', 'build',
+            '-t', 'signet/opentonapi:def8c61',
+            '-f', file('../docker/tonapi/Dockerfile').absolutePath,
+            file('../docker/tonapi').absolutePath
+}
 
-    testLogging {
+def configureIntegrationTest = { Test task ->
+    task.group = 'verification'
+
+    task.testClassesDirs = sourceSets.test.output.classesDirs
+    task.classpath = sourceSets.test.runtimeClasspath
+
+    task.outputs.upToDateWhen { false }
+    task.outputs.cacheIf { false }
+
+    task.maxParallelForks = 1
+
+    task.systemProperty 'junit.jupiter.execution.parallel.enabled', 'false'
+
+    task.systemProperty 'it.compose.file',
+            file('../docker/docker-compose.yml').absolutePath
+
+    task.systemProperty 'it.evm.compose.file',
+            file('../docker/evm-compose.yml').absolutePath
+
+    task.systemProperty 'it.tron.compose.file',
+            file('../docker/tron-compose.yml').absolutePath
+
+    task.systemProperty 'it.solana.compose.file',
+            file('../docker/solana-compose.yml').absolutePath
+
+    task.systemProperty 'it.ton.compose.file',
+            file('../docker/ton-compose.yml').absolutePath
+
+    task.systemProperty 'it.xrp.compose.file',
+            file('../docker/xrp-compose.yml').absolutePath
+
+    task.systemProperty 'it.logs.dir',
+            layout.buildDirectory.dir('container-logs').get().asFile.absolutePath
+
+    task.systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', 'warn'
+
+    if (System.getProperty('it.tonapi.binary')) {
+        task.systemProperty 'it.tonapi.binary',
+                System.getProperty('it.tonapi.binary')
+    }
+
+    task.testLogging {
         events 'passed', 'skipped', 'failed'
         exceptionFormat = 'full'
     }
 
-    doFirst {
+    task.doFirst {
         if (System.getProperty('os.name').startsWith('Mac') && !System.getenv('DOCKER_HOST')) {
-            def socket = System.getenv('COLIMA_SOCKET_ENV') ?: "${System.getProperty('user.home')}/.colima/default/docker.sock"
+            def socket = System.getenv('COLIMA_SOCKET_ENV')
+                    ?: "${System.getProperty('user.home')}/.colima/default/docker.sock"
+
             if (!file(socket).exists()) {
-                throw new GradleException('Start Colima with: colima start --port-forwarder grpc (or set DOCKER_HOST)')
+                throw new GradleException(
+                        'Start Colima with: colima start --port-forwarder grpc (or set DOCKER_HOST)'
+                )
             }
+
             environment 'DOCKER_HOST', "unix://${socket}"
-            environment 'TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE', System.getenv('TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE') ?: '/var/run/docker.sock'
-            environment 'TESTCONTAINERS_HOST_OVERRIDE', System.getenv('TESTCONTAINERS_HOST_OVERRIDE') ?: '127.0.0.1'
+            environment 'TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE',
+                    System.getenv('TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE')
+                            ?: '/var/run/docker.sock'
+            environment 'TESTCONTAINERS_HOST_OVERRIDE',
+                    System.getenv('TESTCONTAINERS_HOST_OVERRIDE')
+                            ?: '127.0.0.1'
         }
     }
+}
+
+def registerChainTest = { String name, String tag ->
+    tasks.register(name, Test) {
+        configureIntegrationTest(delegate)
+
+        useJUnitPlatform {
+            includeTags tag
+        }
+    }
+}
+
+registerChainTest('bitcoinTest', 'bitcoin')
+registerChainTest('evmTest', 'evm')
+registerChainTest('tronTest', 'tron')
+registerChainTest('tonTest', 'ton')
+registerChainTest('xrpTest', 'xrp')
+registerChainTest('solanaTest', 'solana')
+
+tasks.named('tonTest') {
+    if (!System.getProperty('it.tonapi.binary')) {
+        dependsOn tasks.named('buildTonApiImage')
+    }
+}
+
+tasks.named('test') {
+    enabled = false
+}
+
+tasks.register('integrationTest') {
+    group = 'verification'
+    dependsOn(
+            'bitcoinTest',
+            'evmTest',
+            'tronTest',
+            'tonTest',
+            'xrpTest',
+            'solanaTest'
+    )
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('integrationTest')
 }

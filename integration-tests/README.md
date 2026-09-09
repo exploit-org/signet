@@ -1,11 +1,12 @@
 # Integration tests
 
-- `src/testFixtures/java`: shared container lifecycle and Bitcoin/EVM/TRON/Solana/XRP fixtures.
+- `src/testFixtures/java`: shared container lifecycle and Bitcoin/EVM/TRON/Solana/TON/XRP fixtures.
 - `docker/docker-compose.yml`: Bitcoin Core regtest and Blockbook as separate services.
 - `docker/evm-compose.yml`: Anvil and a separate Ethereum-configured Blockbook.
 - `docker/tron-compose.yml`: official TRE private chain and Blockbook v0.6.0 built from its tagged source.
 - `docker/solana-compose.yml`: Agave 3.1.8 test validator, with its real System/SPL/Token-2022 programs.
 - `docker/xrp-compose.yml`: rippled 3.3.0 standalone, pinned by image digest, with BatchV1_1 enabled.
+- `docker/ton-compose.yml`: private MyLocalTon validator, pinned by image digest.
 - `functional/src/test/java`: usage scenarios through the blockchain providers.
 
 ## Run
@@ -50,7 +51,93 @@ unavailable; it does not silently substitute consumed energy for the required li
 # XRP native payments and atomic batches, both curves, tags, fees, history, rollback and replay/expiry:
 ./gradlew :integration-tests:functional:test --tests '*Xrp*Test'
 ./gradlew :xrp:test
+
+# TON through a real validator and OpenTonAPI (the image is built automatically):
+./gradlew tonTest
+./gradlew :ton:test
 ```
+
+## TON
+
+Each class starts a fresh MyLocalTon private network with global ID `-3` and a local
+OpenTonAPI instance. Node images are pinned for AMD64/ARM64; the fixture selects by
+daemon architecture.
+No `.env`, public-chain funds or hosted API token is needed.
+The fixture gives Simplex a one-second target interval and a three-second first-block
+deadline; the image's subsecond defaults repeatedly exhaust collation deadlines in Docker.
+
+OpenTonAPI is pinned to `def8c61d7186d1063c0c8b3a4d5490254a1d26c1`. Its small
+[fixture patch](docker/tonapi/local-chain.patch) configures local Jetton discovery and
+removes public preload/price/address-book inputs and staking-reward background reads.
+The latter require election history that a fresh genesis lacks. HTTP handlers, TVM
+execution, transaction serialization and lite-client reads are unchanged.
+
+Run the tagged TON suite on an AMD64 or ARM64 Docker host:
+
+```sh
+./gradlew tonTest
+```
+
+`tonTest` builds the OpenTonAPI image before running tests. The build stage runs Go
+on Docker's native architecture and uses an AMD64 CGO cross-compiler, avoiding Go
+compiler crashes under QEMU. The runtime remains AMD64 because tongo ships its
+Linux emulator for AMD64. Docker uses cached layers on subsequent runs.
+
+An optional native backend remains available on macOS ARM. It requires Go 1.26,
+`libsodium` and `libsecp256k1` on the host. The script verifies the pinned source
+archive, applies the same fixture patch and builds a local binary:
+
+```sh
+bash integration-tests/docker/tonapi/build-native.sh
+./gradlew tonTest \
+  -Dit.tonapi.binary="$PWD/integration-tests/build/tonapi/opentonapi"
+```
+
+The native process and Docker backend use the same OpenTonAPI source. Tests own the
+process lifecycle and save logs under `functional/build/container-logs/tonapi-*.log`.
+The validator still runs in Testcontainers.
+
+The validator creates blocks continuously. A public genesis key from
+[`mylocalton-docker` revision `7ffe58315280eb7359a45929c921f32c4bdce5ce`](https://github.com/neodix42/mylocalton-docker/tree/7ffe58315280eb7359a45929c921f32c4bdce5ce)
+bootstraps a generated funding wallet through a Signet-signed transaction. Subsequent
+funding uses that dedicated wallet, since MyLocalTon also sends validator-election
+messages from genesis. The genesis V3R2 wallet uses workchain `-1` and wallet ID `42`.
+This fixture key belongs only to the disposable private chain. No mainnet/testnet
+endpoint or funded external account is required.
+OpenTonAPI reads the generated liteserver configuration after the validator healthcheck
+passes. Ports are assigned dynamically. No `.env` file is needed.
+
+`TonPaymentsTest` covers V3R1, V3R2, V4R2, V5R1 and Highload V3: first-transfer deployment,
+subsequent transfers, UTF-8 comments, sender compute/action success, delivery to the
+destination, replay/stale-seqno rejection, expiry, insufficient balance and fee limits.
+Balance reconciliation includes the sender's transaction and forwarding fees plus
+the recipient's transaction fees, including storage charged on subsequent receipts.
+Rejected operations assert unchanged balances. The independent TVM vectors separately
+check on-chain replay and expiry rejection; the broadcaster cases check local rejection.
+
+`sendBoc` acknowledges an external message, so the test follows its normalized message
+hash to the executed transaction, then follows the outgoing internal message to the
+recipient. It does not treat RPC acknowledgement as settlement. Readiness and execution
+use bounded state polling. Container logs are saved under
+`functional/build/container-logs/TonPaymentsTest/`; containers and volumes are removed
+on completion or failure.
+
+See [`ton/README.md`](../ton/README.md) for the current API and
+[`TON vector provenance`](../ton/src/test/resources/vectors/README.md) for SDK/TVM checks.
+
+`TonContractsTest` deploys the committed [counter fixture](src/testFixtures/resources/ton/README.md)
+through V4R2/V5R1 and invokes it through those wallets and Highload V3. Highload's direct
+StateInit restriction is checked before submission. It checks typed getters and getter
+arguments, verifies owner authorization, and confirms storage rollback after a destination
+exception. A successful sender transaction is checked separately from the destination's
+compute result; contract failure is allowed to charge fees and generate a bounce.
+
+`TonJettonsTest` deploys the official TEP-74 fixture, mints, transfers with a notification
+payload, checks native getter and indexed token balances, burns and rejects an excessive
+transfer. `TonApiTest` exercises `TonProvider`, masterchain/shard block reads, address
+history, hash lookup, transaction parsing and masterchain interval history. OpenTonAPI's
+lightweight storage does not implement message-hash lookup; that endpoint is exposed for
+hosted TONAPI but is not counted as covered by the local node tests.
 
 ## Fanout on EVM and TRON
 

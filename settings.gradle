@@ -24,3 +24,5 @@ project(':evm:contracts').name = 'evm-contracts'
 
 include 'ed25519-support'
 include 'bom'
+
+include 'ton'

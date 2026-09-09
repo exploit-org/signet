@@ -58,6 +58,7 @@ ext {
             ':evm:evm-contracts',
             ':tron',
             ':solana',
+            ':ton',
             ':xrp',
             ':blockbook',
             ':blockbook:blockbook-bitcoin',
@@ -125,6 +126,10 @@ ext {
             ':solana'                     : [
                     name       : 'Signet Solana',
                     description: 'Solana blockchain support for Signet.'
+            ],
+            ':ton'                        : [
+                    name       : 'Signet TON',
+                    description: 'TON wallet and transfer support for Signet.'
             ],
             ':xrp'                        : [
                     name       : 'Signet XRP',
