@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+    id 'java-library'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api project(':spi')
+    api project(':ed25519-support')
+    api('org.ton.ton4j:tlb:2.1.0') {
+        exclude group: 'ch.qos.logback'
+    }
+
+    implementation('org.ton.ton4j:smartcontract:2.1.0') {
+        transitive = false
+    }
+
+    testImplementation platform('org.junit:junit-bom:6.0.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+sourceSets.test.resources.exclude '**/node_modules/**'

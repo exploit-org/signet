@@ -1,0 +1,26 @@
+services:
+  genesis:
+    image: "${TON_NODE_IMAGE:-ghcr.io/neodix42/mylocalton-docker@sha256:f05f7a5fabc02fa50f9e548c46c67715b492259daf61f5f278d7283eeebfbb16}"
+    environment:
+      GENESIS: "true"
+      NAME: genesis
+      GLOBAL_ID: "-3"
+      VERBOSITY: "1"
+      SPAM_RUN: "0"
+      SIMPLEX_TARGET_RATE_MS: "1000"
+      SIMPLEX_FIRST_BLOCK_TIMEOUT_MS: "3000"
+    ports: ["127.0.0.1::40004"]
+    volumes:
+      - ton-shared:/usr/share/data
+      - ton-db:/var/ton-work/db
+    healthcheck:
+      test: ["CMD-SHELL", "lite-client -a 127.0.0.1:40004 -p /var/ton-work/db/liteserver.pub -t 3 -c last"]
+      interval: 2s
+      timeout: 5s
+      retries: 90
+    labels:
+      org.exploit.signet.test-run: "${SIGNET_TEST_RUN:-manual}"
+
+volumes:
+  ton-shared:
+  ton-db:

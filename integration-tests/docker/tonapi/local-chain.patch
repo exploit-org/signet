@@ -1,0 +1,65 @@
+--- a/cmd/api/main.go
++++ b/cmd/api/main.go
+@@ -4,6 +4,7 @@
+ 	"context"
+ 	"fmt"
+ 	"net/http"
++	"os"
+ 
+ 	"github.com/prometheus/client_golang/prometheus/promhttp"
+ 	"github.com/tonkeeper/opentonapi/pkg/addressbook"
+@@ -14,10 +15,8 @@
+ 	"github.com/tonkeeper/opentonapi/pkg/config"
+ 	"github.com/tonkeeper/opentonapi/pkg/core"
+ 	"github.com/tonkeeper/opentonapi/pkg/litestorage"
+-	"github.com/tonkeeper/opentonapi/pkg/pyth"
+ 	"github.com/tonkeeper/opentonapi/pkg/spam"
+ 	"github.com/tonkeeper/tongo"
+-	ton "github.com/tonkeeper/tongo/config"
+ 	"github.com/tonkeeper/tongo/liteapi"
+ 	"go.uber.org/zap"
+ )
+@@ -45,29 +44,19 @@
+ 	if err != nil {
+ 		log.Fatal("failed to create liteapi client", zap.Error(err))
+ 	}
+-	var archiveLiteServers []ton.LiteServer
+-	if len(cfg.App.ArchiveLiteServers) != 0 {
+-		archiveLiteServers = cfg.App.ArchiveLiteServers
+-	} else if len(cfg.App.LiteServers) != 0 {
+-		archiveLiteServers = cfg.App.LiteServers
+-	} else {
+-		var opt liteapi.Options
+-		liteapi.Mainnet()(&opt)
+-		archiveLiteServers = opt.LiteServers
++
++	var jettons []tongo.AccountID
++	if address := os.Getenv("SIGNET_JETTON"); address != "" {
++		jettons = append(jettons, tongo.MustParseAccountID(address))
+ 	}
+-
+-	pythFeeds := pyth.GetUpdatedWithFallback(context.Background(), log)
+ 	storage, err := litestorage.NewLiteStorage(
+ 		log,
+ 		core.LiteAPIClient(client),
+-		litestorage.WithPreloadBlocks([]tongo.BlockID{
+-			tongo.MustParseBlockID("(0,8000000000000000,72945279)"),
+-		}),
+ 		litestorage.WithPreloadAccounts(cfg.App.Accounts),
+ 		litestorage.WithBlockChannel(storageBlockCh),
+-		litestorage.WithPythPriceFeeds(pythFeeds),
++		litestorage.WithKnownJettons(jettons),
+ 	)
+-	book := addressbook.NewAddressBook(log, config.AddressPath, config.JettonPath, config.CollectionPath, storage)
++	book := addressbook.NewAddressBook(log, "", "", "", storage)
+ 	// The executor is used to resolve DNS records.
+ 	tongo.SetDefaultExecutor(storage)
+ 
+@@ -86,7 +75,6 @@
+ 		api.WithMessageSender(msgSender),
+ 		api.WithSpamFilter(spamFilter),
+ 		api.WithTonConnectSecret(cfg.TonConnect.Secret),
+-		api.WithArchiveLiteServers(archiveLiteServers),
+ 		api.WithPublicAPIURL(cfg.PublicAPIURL),
+ 	)
+ 	if err != nil {

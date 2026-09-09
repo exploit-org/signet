@@ -1,0 +1,48 @@
+;; Signet integration fixture. Storage: owner:MsgAddressInt counter:uint64.
+cell get_data() asm "c4 PUSH";
+() set_data(cell value) impure asm "c4 POP";
+slice begin_parse(cell value) asm "CTOS";
+builder begin_cell() asm "NEWC";
+cell end_cell(builder value) asm "ENDC";
+builder store_slice(builder value, slice data) asm "STSLICER";
+(slice, slice) load_msg_addr(slice value) asm(-> 1 0) "LDMSGADDR";
+int equal_slices_bits(slice first, slice second) asm "SDEQ";
+int slice_empty?(slice value) asm "SEMPTY";
+() end_parse(slice value) impure asm "ENDS";
+
+() recv_internal(int msg_value, cell full_message, slice body) impure {
+    if (body.slice_empty?()) {
+        return ();
+    }
+
+    slice header = full_message.begin_parse();
+    int flags = header~load_uint(4);
+    if (flags & 1) {
+        return ();
+    }
+
+    slice sender = header~load_msg_addr();
+    slice data = get_data().begin_parse();
+    slice owner = data~load_msg_addr();
+    int counter = data~load_uint(64);
+    throw_unless(401, equal_slices_bits(sender, owner));
+
+    int op = body~load_uint(32);
+    body~load_uint(64); ;; query_id
+    int delta = body~load_uint(32);
+    body.end_parse();
+    throw_unless(400, (op == 1) | (op == 2));
+
+    set_data(begin_cell().store_slice(owner).store_uint(counter + delta, 64).end_cell());
+    throw_if(402, op == 2); ;; Must roll back the preceding storage write.
+}
+
+int get_counter() method_id {
+    slice data = get_data().begin_parse();
+    data~load_msg_addr();
+    return data~load_uint(64);
+}
+
+int add(int delta) method_id {
+    return get_counter() + delta;
+}

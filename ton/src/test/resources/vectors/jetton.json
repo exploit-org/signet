@@ -1,0 +1,8 @@
+{
+  "source": "@ton/core via pinned package-lock.json; TEP-74 message schemas",
+  "bodies": {
+    "transfer": "te6ccgEBAwEAdAACrg+KfqUAAAAAAAAAB0B1vNFYAGZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZnAAiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIph6EgQECAAgAAAAqACIAAAAAU2lnbmV0IEpldHRvbg==",
+    "empty": "te6ccgEBAQEAVgAAqA+KfqUAAAAAAAAAB0B1vNFYAGZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZnAAiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIgA==",
+    "burn": "te6ccgEBAQEANAAAZFlfB7wAAAAAAAAAB0B1vNFYAERERERERERERERERERERERERERERERERERERERERERE"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "signet-ton-vectors",
+  "private": true,
+  "dependencies": {
+    "@ton/crypto": "3.3.0",
+    "@ton/sandbox": "0.44.0",
+    "@ton/ton": "16.3.0",
+    "ton-crypto": "3.2.0",
+    "typescript": "5.9.3"
+  }
+}
