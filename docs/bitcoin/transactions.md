@@ -123,7 +123,7 @@ public static Receipt submit(
 }
 ```
 
-The signing result is `BitcoinTransaction`. Its `dump()` is the serialized transaction; `txid()` and `wtxid()` identify the base and witness serialization respectively.
+The signing result is `BitcoinTransaction`. Its `dump()` is the serialized transaction; `hash()` and `wtxid()` identify the base and witness serialization respectively.
 
 The broadcaster returns after submission. Use indexed history or block reads to establish inclusion and the confirmation depth required by your application.
 

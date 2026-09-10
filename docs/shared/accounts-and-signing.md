@@ -115,6 +115,10 @@ Use the same descriptor when deriving the address and preparing Bitcoin transact
 
 TRON accepts `TronAccountDescriptor`; `null` resolves to the default address byte `0x41`. EVM, Solana, and XRP do not use descriptors, so call the one-argument methods. Passing a descriptor to those address services is rejected or reported as invalid.
 
+TON uses `TonAccountDescriptor` for the network, wallet version, workchain, wallet
+ID, and Highload timeout. Use the same descriptor for derivation and preparation;
+null defaults to mainnet V5R1. See [TON wallet descriptors](../ton/README.md#wallet-descriptors).
+
 The address formats and key types are:
 
 | Provider | Key type | Address | Descriptor |
@@ -123,6 +127,7 @@ The address formats and key types are:
 | EVM | secp256k1 | Checksummed `0x` address | None |
 | TRON | secp256k1 | Base58Check address, usually `T...` | Optional `TronAccountDescriptor` |
 | Solana | Ed25519 | Base58 public key | None |
+| TON | Ed25519 | Friendly address or raw `workchain:hash` | `TonAccountDescriptor` selects the wallet contract |
 | XRP | secp256k1 or Ed25519 | Classic `r...` address | None |
 
 Use `isValidPublicAddress` at input boundaries. It validates format and, when supplied, the descriptor's network or address byte. It does not prove that the address is funded or exists on the network.
@@ -147,6 +152,7 @@ The backends have different read semantics:
 - EVM reads the native balance from the RPC client.
 - TRON reads the account balance from the node.
 - Solana reads the lamport balance from the RPC client.
+- TON reads the nanoton balance from TONAPI.
 - XRP reads the account balance from the current ledger view and returns zero for an unfunded account.
 
 ### Token balances
@@ -188,6 +194,11 @@ XRP issued-currency balances are not part of `Balances`; query the raw ledger AP
 var spendableDrops = xrp.accounts().balance().spendableBalanceOf(xrpAddress);
 ```
 
+TON reads a known Jetton through `balanceOf(owner, master)` and exposes indexed
+discovery through `jettons(owner, offset, limit)`. The address is the Jetton
+master, not the owner's token wallet. See [TON token balances](../ton/contracts.md#jetton-balances-and-discovery)
+and [amount conversion](../ton/README.md#amount-conversion).
+
 ## Signing
 
 Account management and transaction signing are separate services. Prepare a transaction with `provider.transactions().factory()`, then pass the account and signable value to `provider.signer().sign(...)`:
@@ -209,6 +220,7 @@ The concrete result depends on the signable value:
 | EVM permit or authorization | `EvmSignature` |
 | `TronUnsignedTransaction` | `TronSignedTransaction` |
 | Solana unsigned or partially signed transaction | `SolanaPartiallySignedTransaction` or `SolanaSignedTransaction` |
+| `TonUnsignedTransaction` | `TonSignedTransaction` |
 | `XrpUnsignedTransaction` | `XrpSignedTransaction` |
 
 The supplied in-memory signer registers these strategies. If an application supplies its own signer, keep the chain-specific strategies registered and preserve these result types.

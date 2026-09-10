@@ -54,7 +54,7 @@ public static void inspectBlock(
     System.out.println("Transactions: " + block.transactions().size());
 
     for (var transaction : block.transactions()) {
-        System.out.println("Txid: " + transaction.txid());
+        System.out.println("Txid: " + transaction.hash());
         System.out.println("Witness txid: " + transaction.wtxid());
 
         for (var output : transaction.outputs()) {
@@ -108,7 +108,7 @@ public static void inspectHistory(
             .getTransactions(address, searchAfterMs);
 
     for (var transaction : transactions) {
-        System.out.println(transaction.txid());
+        System.out.println(transaction.hash());
         System.out.println(Instant.ofEpochMilli(transaction.timestampMs()));
     }
 }
