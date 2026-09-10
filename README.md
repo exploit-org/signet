@@ -1,6 +1,6 @@
 # Signet
 
-Java 25 APIs for Bitcoin, EVM, TRON, Solana, and XRP Ledger: accounts, balances,
+Java 25 APIs for Bitcoin, EVM, TRON, Solana, TON, and XRP Ledger: accounts, balances,
 transaction preparation, signing, submission, blocks, and history.
 
 ## Start building
@@ -21,6 +21,7 @@ its pages, including imports and the assumptions for each operation.
 | EVM | [Connect](docs/evm/README.md) | [Native and ERC20 transfers](docs/evm/transactions.md), [contracts](docs/evm/contracts.md) |
 | TRON | [Connect](docs/tron/README.md) | [TRX and TRC20 transfers](docs/tron/transactions.md), [contracts](docs/tron/contracts.md) |
 | Solana | [Connect](docs/solana/README.md) | [SOL and SPL transfers](docs/solana/transactions.md), [amount conversion by mint](docs/solana/README.md#amount-conversion-by-mint), [programs](docs/solana/programs.md) |
+| TON | [Connect](docs/ton/README.md) | [TON transfers](docs/ton/transactions.md), [contracts and Jettons](docs/ton/contracts.md), [blocks and execution](docs/ton/blocks-and-history.md) |
 | XRP | [Connect](docs/xrp/README.md) | [Payments and batches](docs/xrp/transactions.md), [validated results](docs/xrp/blocks-and-history.md) |
 
 ## Work on Signet

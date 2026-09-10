@@ -59,6 +59,7 @@ Select the artifacts needed by your application:
 - `evm` and `blockbook-evm`: EVM RPC and indexed transaction history.
 - `tron` and `blockbook-tron`: TRON node API and indexed transaction history.
 - `solana`: Solana RPC, accounts, tokens, transactions, and programs.
+- `ton`: TONAPI, wallet descriptors, TON transfers, Jettons, and contract calls.
 - `xrp`: XRP Ledger RPC, accounts, payments, and batches.
 
 The chain artifacts bring their shared dependencies transitively. `spi` owns common interfaces, `crypto-util` owns encoding and hash helpers, and the two curve support modules connect Signet to Anvil. `evm-spi` supplies the shared EVM intents and amount interfaces; `evm-contracts` supplies ABI bindings used by EVM and TRON.
@@ -141,7 +142,7 @@ public static void loadSecp256k1() {
 }
 ```
 
-Solana and XRP Ed25519 use:
+Solana, TON, and XRP Ed25519 use:
 
 ```java
 public static void loadEd25519() {
@@ -179,7 +180,7 @@ public final class ReadBitcoinBlock {
             System.out.println("Time: " + Instant.ofEpochMilli(block.timestampMs()));
 
             for (var transaction : block.transactions()) {
-                System.out.println(transaction.txid());
+                System.out.println(transaction.hash());
             }
         }
     }

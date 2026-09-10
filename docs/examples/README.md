@@ -18,6 +18,8 @@ implement. Start with [runtime setup](../getting-started/README.md) and the
 | Send TRX or TRC20 | [TRX](../tron/transactions.md#send-trx), [TRC20](../tron/transactions.md#send-trc20) |
 | Send SOL or SPL tokens | [SOL](../solana/transactions.md#send-sol), [SPL](../solana/transactions.md#send-spl-tokens) |
 | Convert Solana token amounts using mint decimals | [Conversion in both directions](../solana/README.md#amount-conversion-by-mint) |
+| Send TON or use a Highload wallet | [Native payment](../ton/transactions.md#send-ton), [Highload V3](../ton/transactions.md#highload-v3) |
+| Send Jettons or convert token amounts | [TEP-74 transfer](../ton/contracts.md#send-jettons), [Conversion](../ton/README.md#amount-conversion) |
 | Send XRP with a destination tag | [Tagged payment](../xrp/transactions.md#payment-intent) |
 | Submit an atomic XRP batch | [Batch](../xrp/transactions.md#atomic-xrp-batch) |
 
@@ -32,6 +34,8 @@ implement. Start with [runtime setup](../getting-started/README.md) and the
 | Read or change TRON contract state | [TRON contracts](../tron/contracts.md) |
 | Add a memo to a Solana payment | [Instructions](../solana/programs.md#compose-instructions) |
 | Use a Solana sponsor, v0, or durable nonce | [Sponsorship](../solana/programs.md#sponsored-v0-payment), [nonce](../solana/programs.md#durable-nonce) |
+| Read, call, or deploy a TON contract | [Getters](../ton/contracts.md#read-a-getter), [Calls](../ton/contracts.md#compose-a-contract-call), [Deployment](../ton/contracts.md#deploy-a-contract) |
+| Discover Jettons held by a wallet or burn tokens | [Balances and discovery](../ton/contracts.md#jetton-balances-and-discovery), [Burn](../ton/contracts.md#burn-jettons) |
 
 ## Reads and reconciliation
 
@@ -42,6 +46,7 @@ implement. Start with [runtime setup](../getting-started/README.md) and the
 | Check an EVM receipt or query logs | [Execution](../evm/blocks-and-history.md#inspect-a-submitted-transaction), [logs](../evm/blocks-and-history.md#logs-and-historical-calls) |
 | Read TRON confirmed blocks | [TRON reads](../tron/blocks-and-history.md) |
 | Track Solana status | [Submission status](../solana/blocks-and-history.md#submission-status) |
+| Track a TON message and inspect execution | [Transaction lookup](../ton/blocks-and-history.md#find-the-executed-transaction), [Execution](../ton/blocks-and-history.md#inspect-execution) |
 | Verify an XRP Payment or Batch | [Validated results](../xrp/blocks-and-history.md#transaction-result) |
 | Read raw indexer pagination metadata | [Blockbook](../blockbook/README.md#read-raw-indexer-data) |
 

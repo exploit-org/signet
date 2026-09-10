@@ -1,6 +1,6 @@
 # Signet Documentation
 
-Signet provides Java APIs for accounts, balances, transaction preparation, signing, submission, blocks, and transaction history across five blockchain environments.
+Signet provides Java APIs for accounts, balances, transaction preparation, signing, submission, blocks, and transaction history across six blockchain environments.
 
 **On this page:**
 
@@ -34,7 +34,7 @@ what you want to build. Examples are embedded in the relevant Markdown pages.
 | `signer()` | Sign the prepared value with the account's key provider | Depends on the key provider |
 | `transactions().broadcaster()` | Submit signed transaction bytes | Yes |
 | `blocks().api()` / `transactions().api()` | Read chain state, execution, and history | Yes |
-| `transactions().parser()` | Decode an existing signed dump | Local |
+| `transactions().parser()` | Decode transaction data in the network's supported format | Local |
 | `converter()` | Convert display amounts to atomic units and back | Token metadata may require RPC |
 
 See [transaction lifecycle, amounts, and fees](shared/transactions.md) for the
@@ -49,6 +49,7 @@ and pagination.
 | [EVM](evm/README.md) | [Native, ERC20, fanout](evm/transactions.md) | [Finalized blocks, receipts, logs](evm/blocks-and-history.md) | [ABI calls, deployment, permits](evm/contracts.md) |
 | [TRON](tron/README.md) | [TRX, TRC20, fanout](tron/transactions.md) | [Confirmed blocks and history](tron/blocks-and-history.md) | [TRC20 and custom calls](tron/contracts.md) |
 | [Solana](solana/README.md) | [SOL, SPL, sponsored transactions](solana/transactions.md) | [Slots, status, account history](solana/blocks-and-history.md) | [Instructions, v0, durable nonces](solana/programs.md) |
+| [TON](ton/README.md) | [TON, comments, Highload wallets](ton/transactions.md) | [Masterchain, shards, execution](ton/blocks-and-history.md) | [Calls, getters, Jettons](ton/contracts.md) |
 | [XRP](xrp/README.md) | [Payments, tags, atomic batches](xrp/transactions.md) | [Validated ledgers and results](xrp/blocks-and-history.md) | Direct XRP Payment and Batch |
 
 ## Common tasks
