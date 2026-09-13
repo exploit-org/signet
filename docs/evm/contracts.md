@@ -27,7 +27,7 @@ import org.exploit.signet.evm.model.rpc.HexData;
 import org.exploit.signet.evm.model.rpc.TransactionRequest;
 import org.exploit.signet.evm.model.signature.EIP712Domain;
 import org.exploit.signet.evm.model.signature.ERC2612Permit;
-import org.exploit.signet.evm.model.transaction.EvmSignature;
+import org.exploit.signet.evm.model.transaction.signature.EvmSignature;
 import org.exploit.signet.evm.model.transaction.EvmUnsignedTransaction;
 import org.exploit.signet.spi.model.account.Account;
 import org.web3j.abi.datatypes.Address;

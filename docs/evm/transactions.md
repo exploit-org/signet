@@ -23,7 +23,7 @@ import org.exploit.signet.evm.contract.Call;
 import org.exploit.signet.evm.model.signature.EIP712Domain;
 import org.exploit.signet.evm.model.signature.ERC3009ReceiveAuthorization;
 import org.exploit.signet.evm.model.signature.ERC3009TransferAuthorization;
-import org.exploit.signet.evm.model.transaction.EvmSignature;
+import org.exploit.signet.evm.model.transaction.signature.EvmSignature;
 import org.exploit.signet.evm.model.transaction.EvmSignedTransaction;
 import org.exploit.signet.evm.model.transaction.EvmUnsignedTransaction;
 import org.exploit.signet.evm.spi.converter.SmartUnitConverter;

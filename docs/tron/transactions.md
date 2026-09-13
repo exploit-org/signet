@@ -22,7 +22,7 @@ import org.exploit.ecc.spi.signature.RecoverableSignature;
 import org.exploit.signet.evm.contract.Call;
 import org.exploit.signet.evm.model.signature.EIP712Domain;
 import org.exploit.signet.evm.model.signature.ERC3009ReceiveAuthorization;
-import org.exploit.signet.evm.model.transaction.EvmSignature;
+import org.exploit.signet.evm.model.transaction.signature.EvmSignature;
 import org.exploit.signet.evm.spi.signature.ERC3009Authorization;
 import org.exploit.signet.spi.model.account.Account;
 import org.exploit.signet.spi.model.signature.RawSignature;
