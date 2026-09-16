@@ -16,8 +16,8 @@ dependencies {
     api project(':secp256k1-support')
     api project(':evm:evm-spi')
     api project(':evm:evm-contracts')
+    api 'org.web3j:rlp:6.0.0'
     implementation project(':crypto-util')
-    implementation 'org.web3j:rlp:6.0.0'
 }
 
 test {
