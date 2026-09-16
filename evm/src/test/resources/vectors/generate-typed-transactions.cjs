@@ -23,5 +23,27 @@ const entry = { address: '0x1111111111111111111111111111111111111111', storageKe
                 signed, hash: Transaction.from(signed).hash });
         }
     }
+    const authorization = await wallet.authorize({ chainId: 1n, nonce: 0, address: entry.address });
+    for (const type of [0, 3, 4]) {
+        const tx = {
+            type, chainId: type === 0 ? 0n : 1n, nonce: 9, gasLimit: 100000n,
+            to: '0x3535353535353535353535353535353535353535', value: 123n, data: '0x00aabb',
+            ...(type === 0 ? { gasPrice: 20000000000n } : {
+                maxPriorityFeePerGas: 1000000000n, maxFeePerGas: 20000000000n, accessList: [entry, entry]
+            }),
+            ...(type === 3 ? { maxFeePerBlobGas: 7n, blobVersionedHashes: ['0x01' + '23'.repeat(31)] } : {}),
+            ...(type === 4 ? { authorizationList: [authorization] } : {})
+        };
+        const unsigned = Transaction.from(tx);
+        const signed = await wallet.signTransaction(tx);
+        const fields = { ...tx, chainId: type === 0 ? null : tx.chainId };
+        if (type === 4) fields.authorizationList = [{
+            chainId: authorization.chainId, nonce: authorization.nonce, address: authorization.address.toLowerCase(),
+            yParity: authorization.signature.yParity, r: authorization.signature.r, s: authorization.signature.s
+        }];
+        vectors.push({ name: `type-${type}-unsigned`, ...fields, sender: wallet.address,
+            signingData: unsigned.unsignedSerialized, signingHash: unsigned.unsignedHash,
+            signed, hash: Transaction.from(signed).hash });
+    }
     console.log(JSON.stringify(vectors, (_, value) => typeof value === 'bigint' ? value.toString() : value, 2));
 })();
