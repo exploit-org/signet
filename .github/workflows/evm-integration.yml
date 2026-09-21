@@ -2,7 +2,9 @@ name: EVM integration
 
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -14,6 +16,7 @@ concurrency:
 
 jobs:
   evm:
+    if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -24,7 +27,7 @@ jobs:
           java-version: '25'
           cache: gradle
       - name: Unit and local EVM integration tests
-        run: ./gradlew :evm:test :evm:evm-contracts:test :evm:evm-spi:test :blockbook:test :blockbook:blockbook-evm:test :integration-tests:functional:test --tests '*Evm*Test' --no-daemon --stacktrace
+        run: ./gradlew :evm:test :evm:evm-contracts:test :evm:evm-spi:test :blockbook:test :blockbook:blockbook-evm:test :integration-tests:functional:evmTest --no-daemon --stacktrace
       - name: Preserve test reports and container logs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

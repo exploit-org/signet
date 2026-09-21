@@ -1,0 +1,42 @@
+name: TON integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ton-integration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ton:
+    if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
+      - name: Unit tests
+        run: ./gradlew :ton:test --no-daemon --stacktrace
+      - name: TON integration tests
+        run: ./gradlew :integration-tests:functional:tonTest --no-daemon --stacktrace
+      - name: Preserve test reports and container logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ton-test-results
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+            integration-tests/functional/build/container-logs/
+          retention-days: 14
