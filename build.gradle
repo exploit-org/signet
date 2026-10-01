@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'org.exploit.signet'
-version = findProperty('releaseVersion') ?: '0.1.0'
+version = findProperty('releaseVersion') ?: '0.1.1'
 
 def firstPropertyOrEnv = { List<String> propertyNames, List<String> envNames ->
     for (def propertyName : propertyNames) {
@@ -45,7 +45,7 @@ def splitBasicAuthToken = { token ->
 def centralMavenBasicCredentials = splitBasicAuthToken(findProperty('centralMavenToken'))
 
 ext {
-    anvilVersion = '0.2.2'
+    anvilVersion = '0.3.1'
 
     signetJavaProjects = [
             ':spi',
