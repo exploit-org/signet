@@ -8,9 +8,9 @@ repositories {
 }
 
 dependencies {
-    api 'org.exploit:jettyx:0.1.7'
-    api 'com.fasterxml.jackson.core:jackson-databind:2.22.2'
-    implementation 'org.exploit:jettyx-jackson:0.1.7'
+    api 'org.exploit:jettyx:0.2.0'
+    api 'com.fasterxml.jackson.core:jackson-databind:2.22.4'
+    implementation 'org.exploit:jettyx-jackson:0.2.0'
     implementation project(':spi')
 
     testImplementation platform('org.junit:junit-bom:6.0.0')

@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'org.exploit.signet'
-version = findProperty('releaseVersion') ?: '0.1.1'
+version = findProperty('releaseVersion') ?: '0.1.2'
 
 def firstPropertyOrEnv = { List<String> propertyNames, List<String> envNames ->
     for (def propertyName : propertyNames) {
