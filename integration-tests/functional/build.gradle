@@ -55,6 +55,9 @@ def configureIntegrationTest = { Test task ->
     task.systemProperty 'it.xrp.compose.file',
             file('../docker/xrp-compose.yml').absolutePath
 
+    task.systemProperty 'it.xlm.compose.file',
+            file('../docker/xlm-compose.yml').absolutePath
+
     task.systemProperty 'it.logs.dir',
             layout.buildDirectory.dir('container-logs').get().asFile.absolutePath
 
@@ -107,6 +110,7 @@ registerChainTest('evmTest', 'evm')
 registerChainTest('tronTest', 'tron')
 registerChainTest('tonTest', 'ton')
 registerChainTest('xrpTest', 'xrp')
+registerChainTest('xlmTest', 'xlm')
 registerChainTest('solanaTest', 'solana')
 
 tasks.named('tonTest') {
@@ -127,6 +131,7 @@ tasks.register('integrationTest') {
             'tronTest',
             'tonTest',
             'xrpTest',
+            'xlmTest',
             'solanaTest'
     )
 }

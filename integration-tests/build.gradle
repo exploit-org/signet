@@ -21,6 +21,7 @@ dependencies {
     testFixturesApi project(':solana')
     testFixturesApi project(':ton')
     testFixturesApi project(':xrp')
+    testFixturesApi project(':xlm')
     testFixturesApi platform('org.junit:junit-bom:6.0.0')
     testFixturesApi 'org.junit.jupiter:junit-jupiter'
     testFixturesApi 'org.testcontainers:testcontainers:1.21.4'

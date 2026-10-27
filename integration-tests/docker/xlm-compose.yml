@@ -1,0 +1,8 @@
+services:
+  stellar:
+    image: stellar/quickstart:latest@sha256:dc1327627d88c20a1306faf463333272bbc5d2ebadd98cd81cf62239517b4bd6
+    command: ["--local", "--protocol-version", "29", "--enable", "core,horizon,rpc"]
+    ports:
+      - "127.0.0.1::8000"
+    labels:
+      org.exploit.signet.test-run: "${SIGNET_TEST_RUN:?SIGNET_TEST_RUN is required}"
