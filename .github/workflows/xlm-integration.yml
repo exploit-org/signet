@@ -1,0 +1,46 @@
+name: XLM integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: xlm-integration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  xlm:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
+      - name: Verify vector checksums
+        working-directory: xlm/src/test/resources/vectors
+        run: sha256sum --check SHA256SUMS
+      - name: Unit and property tests
+        run: ./gradlew :xlm:test --no-daemon --stacktrace
+      - name: XLM integration tests
+        run: ./gradlew :integration-tests:functional:xlmTest --no-daemon --stacktrace
+      - name: Preserve test reports and container logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: xlm-test-results
+          path: |
+            xlm/build/reports/tests/
+            xlm/build/test-results/
+            integration-tests/functional/build/reports/tests/xlmTest/
+            integration-tests/functional/build/test-results/xlmTest/
+            integration-tests/functional/build/container-logs/
+          retention-days: 14
