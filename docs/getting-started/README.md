@@ -29,7 +29,8 @@ import java.time.Instant;
 
 ## Gradle
 
-Use Java 25. Define `signetVersion` in your application's `gradle.properties` using a version available in your chosen repository. For a local build of this checkout, its default version is `1.0-SNAPSHOT`; use `mavenLocal()` after publishing locally.
+Use Java 25. Define `signetVersion` in your application's `gradle.properties`
+using a version available in your chosen repository.
 
 ```groovy
 plugins {
@@ -61,10 +62,10 @@ Select the artifacts needed by your application:
 - `solana`: Solana RPC, accounts, tokens, transactions, and programs.
 - `ton`: TONAPI, wallet descriptors, TON transfers, Jettons, and contract calls.
 - `xrp`: XRP Ledger RPC, accounts, payments, and batches.
+- `xlm`: Stellar RPC, accounts, payments, account creation, and envelope parsing.
 
-The chain artifacts bring their shared dependencies transitively. `spi` owns common interfaces, `crypto-util` owns encoding and hash helpers, and the two curve support modules connect Signet to Anvil. `evm-spi` supplies the shared EVM intents and amount interfaces; `evm-contracts` supplies ABI bindings used by EVM and TRON.
-
-Anvil versions are managed through `org.exploit.anvil:bom`. The current build pins Anvil to `0.2.2` in the root build file.
+The chain artifacts include their shared Java dependencies transitively. Add the
+[native libraries](#native-libraries) separately when using in-memory keys.
 
 ## Snapshots
 
@@ -82,7 +83,8 @@ repositories {
 }
 ```
 
-For a locally built version, use `mavenLocal()` after running `publishAllToMavenLocal`. See [Publishing](../publishing.md) for the build commands. Repository availability depends on which versions have actually been published.
+To use a local build, run `./gradlew publishAllToMavenLocal` in the Signet checkout
+and add `mavenLocal()` to your application's repositories.
 
 ## Maven
 
@@ -142,7 +144,7 @@ public static void loadSecp256k1() {
 }
 ```
 
-Solana, TON, and XRP Ed25519 use:
+Solana, TON, XLM, and XRP Ed25519 use:
 
 ```java
 public static void loadEd25519() {

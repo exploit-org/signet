@@ -1,6 +1,6 @@
 # Signet Documentation
 
-Signet provides Java APIs for accounts, balances, transaction preparation, signing, submission, blocks, and transaction history across six blockchain environments.
+Signet provides Java APIs for accounts, balances, transaction preparation, signing, submission, blocks, and transaction history.
 
 **On this page:**
 
@@ -51,14 +51,14 @@ and pagination.
 | [Solana](solana/README.md) | [SOL, SPL, sponsored transactions](solana/transactions.md) | [Slots, status, account history](solana/blocks-and-history.md) | [Instructions, v0, durable nonces](solana/programs.md) |
 | [TON](ton/README.md) | [TON, comments, Highload wallets](ton/transactions.md) | [Masterchain, shards, execution](ton/blocks-and-history.md) | [Calls, getters, Jettons](ton/contracts.md) |
 | [XRP](xrp/README.md) | [Payments, tags, atomic batches](xrp/transactions.md) | [Validated ledgers and results](xrp/blocks-and-history.md) | Direct XRP Payment and Batch |
+| [XLM](xlm/README.md) | [Payments, account creation, envelopes](xlm/transactions.md) | [Ledgers and results](xlm/blocks-and-history.md) | Classic and Soroban envelope parsing (Protocol 29) |
 
 ## Common tasks
 
 - Send a payment: open the network's transaction page, prepare an unsigned transaction, inspect its fee, sign, submit, and verify execution.
 - Receive deposits: choose an address format, read blocks or indexed history, and persist transaction identity plus network confirmation state.
-- Pay several recipients: Bitcoin uses multiple outputs, EVM and TRON use a deployed Fanout contract, Solana uses multiple instructions, XRP uses its supported Batch amendment.
+- Pay several recipients: Bitcoin uses multiple outputs, EVM and TRON use a deployed Fanout contract, Solana uses multiple instructions, XRP uses its supported Batch amendment, and XLM uses multiple payment operations.
 - Use an external signer: implement the [key provider and signing strategy](shared/accounts-and-signing.md#external-signing).
-- Build and publish artifacts: [Publishing](publishing.md).
 
 ## Reading the examples
 

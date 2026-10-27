@@ -1,9 +1,7 @@
 # Examples by Task
 
-All examples are written directly in the linked documentation sections. There
-are no separate example classes to download or undocumented helper methods to
-implement. Start with [runtime setup](../getting-started/README.md) and the
-[example conventions](../README.md#reading-the-examples).
+Start with [runtime setup](../getting-started/README.md), then choose a task below.
+See [example conventions](../README.md#reading-the-examples) for how to use the snippets.
 
 ## Accounts and payments
 
@@ -22,6 +20,8 @@ implement. Start with [runtime setup](../getting-started/README.md) and the
 | Send Jettons or convert token amounts | [TEP-74 transfer](../ton/contracts.md#send-jettons), [Conversion](../ton/README.md#amount-conversion) |
 | Send XRP with a destination tag | [Tagged payment](../xrp/transactions.md#payment-intent) |
 | Submit an atomic XRP batch | [Batch](../xrp/transactions.md#atomic-xrp-batch) |
+| Send XLM with a memo | [Native payment](../xlm/transactions.md#prepare-native-xlm) |
+| Inspect a Stellar envelope before signing | [Parsing](../xlm/transactions.md#parse-an-envelope), [signing checks](../xlm/transactions.md#before-signing) |
 
 ## Contracts and programs
 
@@ -48,8 +48,5 @@ implement. Start with [runtime setup](../getting-started/README.md) and the
 | Track Solana status | [Submission status](../solana/blocks-and-history.md#submission-status) |
 | Track a TON message and inspect execution | [Transaction lookup](../ton/blocks-and-history.md#find-the-executed-transaction), [Execution](../ton/blocks-and-history.md#inspect-execution) |
 | Verify an XRP Payment or Batch | [Validated results](../xrp/blocks-and-history.md#transaction-result) |
+| Confirm an XLM payment and inspect its result | [Submission and confirmation](../xlm/blocks-and-history.md#submit-and-confirm) |
 | Read raw indexer pagination metadata | [Blockbook](../blockbook/README.md#read-raw-indexer-data) |
-
-[Integration tests](../../integration-tests/README.md) provide additional regression
-coverage against local nodes; following these guides does not require copying the
-test fixtures into your application.

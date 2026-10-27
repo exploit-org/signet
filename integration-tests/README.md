@@ -15,6 +15,7 @@ Requires JDK 25, Docker Engine and Docker Compose V2. Run commands from the repo
 ./gradlew :integration-tests:functional:solanaTest
 ./gradlew :integration-tests:functional:tonTest
 ./gradlew :integration-tests:functional:xrpTest
+./gradlew :integration-tests:functional:xlmTest
 
 # One test class
 ./gradlew :integration-tests:functional:bitcoinTest --tests '*BitcoinPaymentsTest'
@@ -30,6 +31,7 @@ Tests start local nodes automatically. TON also builds its OpenTonAPI image.
 - Solana: SOL, SPL/Token-2022, programs, fees, lookup tables, nonces and history.
 - TON: wallets, payments, contracts, Jettons, fees, blocks and history.
 - XRP: payments, atomic batches, tags, fees, signing and history.
+- XLM: payments, account creation, muxed addresses, multisig, fee bumps, sponsorship and reserves. See [XLM test coverage](../xlm/src/test/README.md).
 
 Suites check successful transactions and rejection cases, including insufficient funds,
 expired transactions, replay and rollback where applicable.
@@ -45,6 +47,7 @@ No Docker required.
 ./gradlew :solana:test
 ./gradlew :ton:test
 ./gradlew :xrp:test
+./gradlew :xlm:test
 ./gradlew :spi:test :crypto-util:test :secp256k1-support:test :ed25519-support:test
 ```
 

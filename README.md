@@ -1,6 +1,6 @@
 # Signet
 
-Java 25 APIs for Bitcoin, EVM, TRON, Solana, TON, and XRP Ledger: accounts, balances,
+Java 25 APIs for Bitcoin, EVM, TRON, Solana, TON, XRP Ledger, and Stellar: accounts, balances,
 transaction preparation, signing, submission, blocks, and history.
 
 ## Start building
@@ -23,8 +23,10 @@ its pages, including imports and the assumptions for each operation.
 | Solana | [Connect](docs/solana/README.md) | [SOL and SPL transfers](docs/solana/transactions.md), [amount conversion by mint](docs/solana/README.md#amount-conversion-by-mint), [programs](docs/solana/programs.md) |
 | TON | [Connect](docs/ton/README.md) | [TON transfers](docs/ton/transactions.md), [contracts and Jettons](docs/ton/contracts.md), [blocks and execution](docs/ton/blocks-and-history.md) |
 | XRP | [Connect](docs/xrp/README.md) | [Payments and batches](docs/xrp/transactions.md), [validated results](docs/xrp/blocks-and-history.md) |
+| XLM | [Connect](docs/xlm/README.md) | [Payments and envelope parsing](docs/xlm/transactions.md), [ledgers and results](docs/xlm/blocks-and-history.md) |
 
 ## Work on Signet
 
+- `./gradlew buildNoTests` builds all publishable modules and runs unit/property tests without node integration suites.
 - [Run unit and real-node integration tests](integration-tests/README.md).
 - [Understand the shared API](docs/README.md#provider-services).
