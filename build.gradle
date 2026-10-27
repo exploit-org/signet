@@ -60,6 +60,7 @@ ext {
             ':solana',
             ':ton',
             ':xrp',
+            ':xlm',
             ':blockbook',
             ':blockbook:blockbook-bitcoin',
             ':blockbook:blockbook-evm',
@@ -134,6 +135,10 @@ ext {
             ':xrp'                        : [
                     name       : 'Signet XRP',
                     description: 'XRP Ledger support for Signet.'
+            ],
+            ':xlm'                        : [
+                    name       : 'Signet XLM',
+                    description: 'Stellar accounts, transactions and signing support for Signet.'
             ],
             ':blockbook'                  : [
                     name       : 'Signet Blockbook',
