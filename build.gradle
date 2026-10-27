@@ -379,6 +379,14 @@ project(':bom') {
     }
 }
 
+tasks.register('buildNoTests') {
+    group = 'build'
+    description = 'Builds all Signet modules with unit tests, excluding node integration suites.'
+    dependsOn((rootProject.ext.signetJavaProjects + [':bom']).collect {
+        "${it}:build"
+    })
+}
+
 tasks.register('publishAllToCentralBundle') {
     group = 'publishing'
     description = 'Publishes every Signet publication into build/repos/central-bundles.'
